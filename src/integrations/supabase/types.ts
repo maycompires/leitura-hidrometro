@@ -14,7 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          nome_completo: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id: string
+          nome_completo?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          nome_completo?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      readings: {
+        Row: {
+          bloco: Database["public"]["Enums"]["bloco_type"]
+          consumo_m3: number
+          created_at: string
+          data_hora: string
+          foto_url: string | null
+          id: string
+          leitura_anterior: number
+          leitura_atual: number
+          observacoes: string | null
+          updated_at: string
+          usuario_id: string
+        }
+        Insert: {
+          bloco: Database["public"]["Enums"]["bloco_type"]
+          consumo_m3?: number
+          created_at?: string
+          data_hora?: string
+          foto_url?: string | null
+          id?: string
+          leitura_anterior?: number
+          leitura_atual: number
+          observacoes?: string | null
+          updated_at?: string
+          usuario_id: string
+        }
+        Update: {
+          bloco?: Database["public"]["Enums"]["bloco_type"]
+          consumo_m3?: number
+          created_at?: string
+          data_hora?: string
+          foto_url?: string | null
+          id?: string
+          leitura_anterior?: number
+          leitura_atual?: number
+          observacoes?: string | null
+          updated_at?: string
+          usuario_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +88,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      bloco_type: "A" | "B" | "C" | "D"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +215,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      bloco_type: ["A", "B", "C", "D"],
+    },
   },
 } as const
