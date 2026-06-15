@@ -1,0 +1,195 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useMemo } from "react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Pencil, Trash2, ImageIcon, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { BLOCOS, fetchProfiles, fetchReadings, signedPhotoUrl, type Bloco, type Reading } from "@/lib/api";
+
+export const Route = createFileRoute("/_authenticated/historico")({
+  component: HistoricoPage,
+});
+
+function HistoricoPage() {
+  const qc = useQueryClient();
+  const [bloco, setBloco] = useState<"all" | Bloco>("all");
+  const [usuario, setUsuario] = useState<string>("all");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [editing, setEditing] = useState<Reading | null>(null);
+  const [editValor, setEditValor] = useState("");
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+
+  const { data: readings = [], isLoading } = useQuery({
+    queryKey: ["readings"],
+    queryFn: () => fetchReadings(),
+  });
+  const { data: profiles = [] } = useQuery({ queryKey: ["profiles"], queryFn: fetchProfiles });
+
+  const profileMap = useMemo(() => Object.fromEntries(profiles.map((p) => [p.id, p.nome_completo || p.email || "Usuário"])), [profiles]);
+
+  const filtered = readings.filter((r) => {
+    if (bloco !== "all" && r.bloco !== bloco) return false;
+    if (usuario !== "all" && r.usuario_id !== usuario) return false;
+    if (from && new Date(r.data_hora) < new Date(from)) return false;
+    if (to && new Date(r.data_hora) > new Date(to + "T23:59:59")) return false;
+    return true;
+  });
+
+  const del = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("readings").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Leitura excluída");
+      qc.invalidateQueries({ queryKey: ["readings"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const update = useMutation({
+    mutationFn: async () => {
+      if (!editing) return;
+      const num = Number(editValor.replace(",", "."));
+      if (!Number.isFinite(num)) throw new Error("Valor inválido");
+      const { error } = await supabase.from("readings").update({ leitura_atual: num }).eq("id", editing.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Leitura atualizada");
+      qc.invalidateQueries({ queryKey: ["readings"] });
+      setEditing(null);
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const showPhoto = async (path: string) => {
+    try {
+      const url = await signedPhotoUrl(path);
+      setPhotoUrl(url);
+    } catch (e: any) {
+      toast.error("Não foi possível abrir a foto");
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-semibold">Histórico</h1>
+        <p className="text-sm text-muted-foreground">Todas as leituras registradas no condomínio</p>
+      </div>
+
+      <Card className="p-4 shadow-soft">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="space-y-1">
+            <Label className="text-xs">Bloco</Label>
+            <Select value={bloco} onValueChange={(v) => setBloco(v as any)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                {BLOCOS.map((b) => <SelectItem key={b} value={b}>Bloco {b}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">Usuário</Label>
+            <Select value={usuario} onValueChange={setUsuario}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                {profiles.map((p) => <SelectItem key={p.id} value={p.id}>{p.nome_completo || p.email}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">De</Label>
+            <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">Até</Label>
+            <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+          </div>
+        </div>
+      </Card>
+
+      <Card className="shadow-soft overflow-hidden">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Data</TableHead>
+                <TableHead>Bloco</TableHead>
+                <TableHead className="text-right">Atual</TableHead>
+                <TableHead className="text-right">Anterior</TableHead>
+                <TableHead className="text-right">Consumo</TableHead>
+                <TableHead>Usuário</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Carregando…</TableCell></TableRow>
+              ) : filtered.length === 0 ? (
+                <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Nenhuma leitura encontrada</TableCell></TableRow>
+              ) : filtered.map((r) => (
+                <TableRow key={r.id}>
+                  <TableCell className="whitespace-nowrap text-sm">{new Date(r.data_hora).toLocaleString("pt-BR")}</TableCell>
+                  <TableCell><span className="rounded-md bg-primary-soft text-primary px-2 py-0.5 text-xs font-medium">{r.bloco}</span></TableCell>
+                  <TableCell className="text-right tabular-nums">{Number(r.leitura_atual).toFixed(2)}</TableCell>
+                  <TableCell className="text-right tabular-nums text-muted-foreground">{Number(r.leitura_anterior).toFixed(2)}</TableCell>
+                  <TableCell className="text-right tabular-nums font-medium">{Number(r.consumo_m3).toFixed(2)}</TableCell>
+                  <TableCell className="text-sm">{profileMap[r.usuario_id] ?? "—"}</TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-1">
+                      {r.foto_url && (
+                        <Button variant="ghost" size="icon" onClick={() => showPhoto(r.foto_url!)}>
+                          <ImageIcon className="h-4 w-4" />
+                        </Button>
+                      )}
+                      <Button variant="ghost" size="icon" onClick={() => { setEditing(r); setEditValor(String(r.leitura_atual)); }}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => confirm("Excluir esta leitura?") && del.mutate(r.id)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </Card>
+
+      <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Editar leitura — Bloco {editing?.bloco}</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <Label>Leitura atual (m³)</Label>
+            <Input inputMode="decimal" value={editValor} onChange={(e) => setEditValor(e.target.value)} />
+            <Button className="w-full" onClick={() => update.mutate()} disabled={update.isPending}>
+              {update.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Salvar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!photoUrl} onOpenChange={(o) => !o && setPhotoUrl(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Foto do hidrômetro</DialogTitle></DialogHeader>
+          {photoUrl && <img src={photoUrl} alt="Hidrômetro" className="w-full rounded-lg" />}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

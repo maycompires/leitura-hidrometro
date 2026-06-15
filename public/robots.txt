@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /dashboard
+Disallow: /historico
+Disallow: /relatorios
+Disallow: /leitura
+Allow: /
