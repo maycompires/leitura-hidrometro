@@ -14,6 +14,7 @@ import { Pencil, Trash2, ImageIcon, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { BLOCOS, fetchProfiles, fetchReadings, signedPhotoUrl, type Bloco, type Reading } from "@/lib/api";
+import { fmtNum } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/historico")({
   component: HistoricoPage,
@@ -145,9 +146,9 @@ function HistoricoPage() {
                 <TableRow key={r.id}>
                   <TableCell className="whitespace-nowrap text-sm">{new Date(r.data_hora).toLocaleString("pt-BR")}</TableCell>
                   <TableCell><span className="rounded-md bg-primary-soft text-primary px-2 py-0.5 text-xs font-medium">{r.bloco}</span></TableCell>
-                  <TableCell className="text-right tabular-nums">{Number(r.leitura_atual).toFixed(2)}</TableCell>
-                  <TableCell className="text-right tabular-nums text-muted-foreground">{Number(r.leitura_anterior).toFixed(2)}</TableCell>
-                  <TableCell className="text-right tabular-nums font-medium">{Number(r.consumo_m3).toFixed(2)}</TableCell>
+                  <TableCell className="text-right tabular-nums">{fmtNum(r.leitura_atual)}</TableCell>
+                  <TableCell className="text-right tabular-nums text-muted-foreground">{fmtNum(r.leitura_anterior)}</TableCell>
+                  <TableCell className="text-right tabular-nums font-medium">{fmtNum(r.consumo_m3)}</TableCell>
                   <TableCell className="text-sm">{profileMap[r.usuario_id] ?? "—"}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">

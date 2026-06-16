@@ -6,7 +6,7 @@ import { Droplet, TrendingUp, TrendingDown, Minus, ArrowRight, Plus } from "luci
 import { BLOCOS, fetchReadings, type Bloco, type Reading } from "@/lib/api";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { cn } from "@/lib/utils";
+import { cn, fmtNum } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
@@ -34,7 +34,7 @@ function Dashboard() {
         </div>
         <div className="relative">
           <p className="text-sm opacity-90">Consumo registrado hoje</p>
-          <p className="mt-1 text-4xl font-semibold tracking-tight">{totalHoje.toFixed(2)} m³</p>
+          <p className="mt-1 text-4xl font-semibold tracking-tight">{fmtNum(totalHoje)} m³</p>
           <p className="mt-2 text-sm opacity-80">Soma das leituras de hoje em todos os blocos</p>
         </div>
       </section>
@@ -98,11 +98,11 @@ function BlockCard({
         ) : last ? (
           <>
             <div className="flex items-baseline gap-1">
-              <span className="text-3xl font-semibold tabular-nums">{Number(last.leitura_atual).toFixed(2)}</span>
+              <span className="text-3xl font-semibold tabular-nums">{fmtNum(last.leitura_atual)}</span>
               <span className="text-sm text-muted-foreground">m³</span>
             </div>
             <p className="text-xs text-muted-foreground">
-              Consumo: <span className="font-medium text-foreground">{Number(last.consumo_m3).toFixed(2)} m³</span>
+              Consumo: <span className="font-medium text-foreground">{fmtNum(last.consumo_m3)} m³</span>
             </p>
             <p className="text-xs text-muted-foreground">
               {formatDistanceToNow(new Date(last.data_hora), { addSuffix: true, locale: ptBR })}
