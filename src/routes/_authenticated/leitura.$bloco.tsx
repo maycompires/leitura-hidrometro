@@ -108,7 +108,7 @@ function LeituraPage() {
           <h1 className="text-2xl font-semibold">Nova leitura — Bloco {bloco}</h1>
           {ultima && (
             <p className="text-sm text-muted-foreground">
-              Última: <span className="font-medium text-foreground">{Number(ultima.leitura_atual).toFixed(2)} m³</span> em{" "}
+              Última: <span className="font-medium text-foreground">{fmtNum(ultima.leitura_atual)} m³</span> em{" "}
               {new Date(ultima.data_hora).toLocaleDateString("pt-BR")}
             </p>
           )}

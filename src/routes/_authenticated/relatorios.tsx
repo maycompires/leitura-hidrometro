@@ -91,10 +91,10 @@ function ReportsPage() {
 <p>Período: ${period} · Gerado em ${new Date().toLocaleString("pt-BR")}</p>
 <h3>Totais por bloco</h3>
 <table><tr>${BLOCOS.map((b) => `<th>Bloco ${b}</th>`).join("")}<th>Total</th></tr>
-<tr>${BLOCOS.map((b) => `<td>${totals.byBloco[b].toFixed(2)} m³</td>`).join("")}<td>${totals.total.toFixed(2)} m³</td></tr></table>
+<tr>${BLOCOS.map((b) => `<td>${fmtNum(totals.byBloco[b])} m³</td>`).join("")}<td>${fmtNum(totals.total)} m³</td></tr></table>
 <h3>Leituras</h3>
 <table><tr><th>Data</th><th>Bloco</th><th>Atual</th><th>Anterior</th><th>Consumo</th></tr>
-${filtered.map((r) => `<tr><td>${new Date(r.data_hora).toLocaleString("pt-BR")}</td><td>${r.bloco}</td><td>${Number(r.leitura_atual).toFixed(2)}</td><td>${Number(r.leitura_anterior).toFixed(2)}</td><td>${Number(r.consumo_m3).toFixed(2)}</td></tr>`).join("")}
+${filtered.map((r) => `<tr><td>${new Date(r.data_hora).toLocaleString("pt-BR")}</td><td>${r.bloco}</td><td>${fmtNum(r.leitura_atual)}</td><td>${fmtNum(r.leitura_anterior)}</td><td>${fmtNum(r.consumo_m3)}</td></tr>`).join("")}
 </table></body></html>`;
     const w = window.open("", "_blank");
     if (!w) return toast.error("Permita pop-ups");
@@ -129,7 +129,7 @@ ${filtered.map((r) => `<tr><td>${new Date(r.data_hora).toLocaleString("pt-BR")}<
         {BLOCOS.map((b) => (
           <Card key={b} className="p-4 shadow-soft">
             <p className="text-xs text-muted-foreground">Bloco {b}</p>
-            <p className="text-2xl font-semibold tabular-nums mt-1">{totals.byBloco[b].toFixed(2)}</p>
+            <p className="text-2xl font-semibold tabular-nums mt-1">{fmtNum(totals.byBloco[b])}</p>
             <p className="text-xs text-muted-foreground">m³</p>
           </Card>
         ))}
@@ -138,11 +138,11 @@ ${filtered.map((r) => `<tr><td>${new Date(r.data_hora).toLocaleString("pt-BR")}<
       <div className="grid grid-cols-2 gap-3">
         <Card className="p-4 shadow-soft">
           <p className="text-xs text-muted-foreground">Total acumulado</p>
-          <p className="text-2xl font-semibold tabular-nums mt-1">{totals.total.toFixed(2)} m³</p>
+          <p className="text-2xl font-semibold tabular-nums mt-1">{fmtNum(totals.total)} m³</p>
         </Card>
         <Card className="p-4 shadow-soft">
           <p className="text-xs text-muted-foreground">Média diária</p>
-          <p className="text-2xl font-semibold tabular-nums mt-1">{totals.media.toFixed(2)} m³</p>
+          <p className="text-2xl font-semibold tabular-nums mt-1">{fmtNum(totals.media)} m³</p>
         </Card>
       </div>
 
