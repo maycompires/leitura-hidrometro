@@ -14,6 +14,7 @@ import { Pencil, Trash2, ImageIcon, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { BLOCOS, fetchProfiles, fetchReadings, signedPhotoUrl, type Bloco, type Reading } from "@/lib/api";
+import { fmtNum } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/historico")({
   component: HistoricoPage,

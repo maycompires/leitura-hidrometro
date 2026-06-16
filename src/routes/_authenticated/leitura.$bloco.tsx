@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { BLOCOS, fetchLastReadingByBloco, uploadHidrometroPhoto, type Bloco } from "@/lib/api";
 import { readMeterFromImage } from "@/lib/ocr.functions";
+import { fmtNum } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/leitura/$bloco")({
   parseParams: (p) => ({ bloco: z.enum(["A", "B", "C", "D"]).parse(p.bloco) as Bloco }),

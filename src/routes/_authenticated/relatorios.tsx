@@ -10,6 +10,7 @@ import {
 import { Download } from "lucide-react";
 import { BLOCOS, fetchReadings, type Bloco, type Reading } from "@/lib/api";
 import { toast } from "sonner";
+import { fmtNum } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/relatorios")({
   component: ReportsPage,
