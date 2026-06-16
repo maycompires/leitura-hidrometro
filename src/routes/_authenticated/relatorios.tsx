@@ -201,10 +201,10 @@ ${blocosHtml}
                 }}
               />
               <Legend />
-              <Bar dataKey="A" fill="var(--color-chart-1)" radius={[4,4,0,0]} />
-              <Bar dataKey="B" fill="var(--color-chart-2)" radius={[4,4,0,0]} />
-              <Bar dataKey="C" fill="var(--color-chart-3)" radius={[4,4,0,0]} />
-              <Bar dataKey="D" fill="var(--color-chart-4)" radius={[4,4,0,0]} />
+              <Bar dataKey="A" fill="#0EA5E9" radius={[4,4,0,0]} />
+              <Bar dataKey="B" fill="#10B981" radius={[4,4,0,0]} />
+              <Bar dataKey="C" fill="#F59E0B" radius={[4,4,0,0]} />
+              <Bar dataKey="D" fill="#EF4444" radius={[4,4,0,0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
