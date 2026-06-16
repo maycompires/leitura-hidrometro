@@ -201,10 +201,10 @@ ${blocosHtml}
                 }}
               />
               <Legend />
-              <Bar dataKey="A" fill="var(--color-chart-1)" radius={[4,4,0,0]} />
-              <Bar dataKey="B" fill="var(--color-chart-2)" radius={[4,4,0,0]} />
-              <Bar dataKey="C" fill="var(--color-chart-3)" radius={[4,4,0,0]} />
-              <Bar dataKey="D" fill="var(--color-chart-4)" radius={[4,4,0,0]} />
+              <Bar dataKey="A" fill="#0EA5E9" radius={[4,4,0,0]} />
+              <Bar dataKey="B" fill="#10B981" radius={[4,4,0,0]} />
+              <Bar dataKey="C" fill="#F59E0B" radius={[4,4,0,0]} />
+              <Bar dataKey="D" fill="#EF4444" radius={[4,4,0,0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -227,10 +227,10 @@ ${blocosHtml}
                 }}
               />
               <Legend />
-              <Line type="monotone" dataKey="A" stroke="var(--color-chart-1)" strokeWidth={2} dot={{ r: 3 }} />
-              <Line type="monotone" dataKey="B" stroke="var(--color-chart-2)" strokeWidth={2} dot={{ r: 3 }} />
-              <Line type="monotone" dataKey="C" stroke="var(--color-chart-3)" strokeWidth={2} dot={{ r: 3 }} />
-              <Line type="monotone" dataKey="D" stroke="var(--color-chart-4)" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="A" stroke="#0EA5E9" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="B" stroke="#10B981" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="C" stroke="#F59E0B" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="D" stroke="#EF4444" strokeWidth={2} dot={{ r: 3 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
