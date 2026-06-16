@@ -63,18 +63,32 @@ function ReportsPage() {
     return { byBloco: t, total, media: filtered.length ? total / Math.max(1, daysInPeriod(period)) : 0 };
   }, [filtered, period]);
 
+  const byBlocoSorted = useMemo(() => {
+    const map: Record<Bloco, Reading[]> = { A: [], B: [], C: [], D: [] };
+    for (const r of filtered) map[r.bloco].push(r);
+    for (const b of BLOCOS) {
+      map[b].sort((a, c) => new Date(c.data_hora).getTime() - new Date(a.data_hora).getTime());
+    }
+    return map;
+  }, [filtered]);
+
   const exportCSV = () => {
-    const rows = [
-      ["Data/Hora", "Bloco", "Leitura Atual", "Leitura Anterior", "Consumo (m³)"],
-      ...filtered.map((r) => [
-        new Date(r.data_hora).toLocaleString("pt-BR"),
-        r.bloco,
-        String(r.leitura_atual),
-        String(r.leitura_anterior),
-        String(r.consumo_m3),
-      ]),
-    ];
-    const csv = rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(";")).join("\n");
+    const lines: string[][] = [];
+    for (const b of BLOCOS) {
+      lines.push([`Bloco ${b}`]);
+      lines.push(["Data/Hora", "Leitura Atual", "Leitura Anterior", "Consumo (m³)"]);
+      for (const r of byBlocoSorted[b]) {
+        lines.push([
+          new Date(r.data_hora).toLocaleString("pt-BR"),
+          String(r.leitura_atual),
+          String(r.leitura_anterior),
+          String(r.consumo_m3),
+        ]);
+      }
+      lines.push([`Total Bloco ${b}`, "", "", String(totals.byBloco[b])]);
+      lines.push([]);
+    }
+    const csv = lines.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(";")).join("\n");
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -86,17 +100,39 @@ function ReportsPage() {
   };
 
   const exportPDF = () => {
+    const blocosHtml = BLOCOS.map((b) => `
+<section class="bloco">
+  <h2>Bloco ${b}</h2>
+  <p class="meta">Total: <strong>${fmtNum(totals.byBloco[b])} m³</strong> · ${byBlocoSorted[b].length} leitura(s)</p>
+  ${byBlocoSorted[b].length === 0
+    ? `<p class="empty">Sem leituras no período.</p>`
+    : `<table><thead><tr><th>Data</th><th>Atual</th><th>Anterior</th><th>Consumo (m³)</th></tr></thead><tbody>
+${byBlocoSorted[b].map((r) => `<tr><td>${new Date(r.data_hora).toLocaleString("pt-BR")}</td><td>${fmtNum(r.leitura_atual)}</td><td>${fmtNum(r.leitura_anterior)}</td><td>${fmtNum(r.consumo_m3)}</td></tr>`).join("")}
+</tbody></table>`}
+</section>`).join("");
+
     const html = `<!doctype html><html><head><meta charset="utf-8"><title>Relatório Terra do Sol</title>
-<style>body{font-family:system-ui,sans-serif;padding:32px;color:#1e293b}h1{color:#0369a1}table{width:100%;border-collapse:collapse;margin-top:16px}th,td{border:1px solid #e2e8f0;padding:8px;text-align:left;font-size:13px}th{background:#f1f5f9}</style></head><body>
+<style>
+body{font-family:system-ui,sans-serif;padding:32px;color:#1e293b}
+h1{color:#0369a1;margin:0 0 4px}
+h2{color:#0369a1;margin:0 0 8px;font-size:18px}
+.meta{color:#64748b;font-size:13px;margin:0 0 12px}
+.empty{color:#94a3b8;font-style:italic}
+table{width:100%;border-collapse:collapse;margin-top:8px}
+th,td{border:1px solid #e2e8f0;padding:8px;text-align:left;font-size:13px}
+th{background:#f1f5f9}
+.bloco{margin-top:24px;page-break-inside:avoid}
+.bloco + .bloco{page-break-before:always}
+.summary{margin-top:16px}
+</style></head><body>
 <h1>Condomínio Terra do Sol — Relatório de Consumo</h1>
-<p>Período: ${period} · Gerado em ${new Date().toLocaleString("pt-BR")}</p>
-<h3>Totais por bloco</h3>
-<table><tr>${BLOCOS.map((b) => `<th>Bloco ${b}</th>`).join("")}<th>Total</th></tr>
-<tr>${BLOCOS.map((b) => `<td>${fmtNum(totals.byBloco[b])} m³</td>`).join("")}<td>${fmtNum(totals.total)} m³</td></tr></table>
-<h3>Leituras</h3>
-<table><tr><th>Data</th><th>Bloco</th><th>Atual</th><th>Anterior</th><th>Consumo</th></tr>
-${filtered.map((r) => `<tr><td>${new Date(r.data_hora).toLocaleString("pt-BR")}</td><td>${r.bloco}</td><td>${fmtNum(r.leitura_atual)}</td><td>${fmtNum(r.leitura_anterior)}</td><td>${fmtNum(r.consumo_m3)}</td></tr>`).join("")}
-</table></body></html>`;
+<p class="meta">Período: ${period} · Gerado em ${new Date().toLocaleString("pt-BR")}</p>
+<div class="summary">
+  <table><thead><tr>${BLOCOS.map((b) => `<th>Bloco ${b}</th>`).join("")}<th>Total Geral</th></tr></thead>
+  <tbody><tr>${BLOCOS.map((b) => `<td>${fmtNum(totals.byBloco[b])} m³</td>`).join("")}<td><strong>${fmtNum(totals.total)} m³</strong></td></tr></tbody></table>
+</div>
+${blocosHtml}
+</body></html>`;
     const w = window.open("", "_blank");
     if (!w) return toast.error("Permita pop-ups");
     w.document.write(html);
