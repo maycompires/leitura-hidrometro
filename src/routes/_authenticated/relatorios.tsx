@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend,
+  LineChart, Line,
 } from "recharts";
 import { Download } from "lucide-react";
 import { BLOCOS, fetchReadings, type Bloco, type Reading } from "@/lib/api";
@@ -205,6 +206,32 @@ ${blocosHtml}
               <Bar dataKey="C" fill="var(--color-chart-3)" radius={[4,4,0,0]} />
               <Bar dataKey="D" fill="var(--color-chart-4)" radius={[4,4,0,0]} />
             </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </Card>
+
+      <Card className="p-4 shadow-soft">
+        <h2 className="text-sm font-medium mb-3">Evolução do consumo</h2>
+        <div className="h-72 w-full">
+          <ResponsiveContainer>
+            <LineChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+              <XAxis dataKey="label" stroke="var(--color-muted-foreground)" fontSize={12} />
+              <YAxis stroke="var(--color-muted-foreground)" fontSize={12} />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "var(--color-popover)",
+                  border: "1px solid var(--color-border)",
+                  borderRadius: 8,
+                  color: "var(--color-popover-foreground)",
+                }}
+              />
+              <Legend />
+              <Line type="monotone" dataKey="A" stroke="var(--color-chart-1)" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="B" stroke="var(--color-chart-2)" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="C" stroke="var(--color-chart-3)" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="D" stroke="var(--color-chart-4)" strokeWidth={2} dot={{ r: 3 }} />
+            </LineChart>
           </ResponsiveContainer>
         </div>
       </Card>
