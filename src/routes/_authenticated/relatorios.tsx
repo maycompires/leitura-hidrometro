@@ -227,10 +227,10 @@ ${blocosHtml}
                 }}
               />
               <Legend />
-              <Line type="monotone" dataKey="A" stroke="var(--color-chart-1)" strokeWidth={2} dot={{ r: 3 }} />
-              <Line type="monotone" dataKey="B" stroke="var(--color-chart-2)" strokeWidth={2} dot={{ r: 3 }} />
-              <Line type="monotone" dataKey="C" stroke="var(--color-chart-3)" strokeWidth={2} dot={{ r: 3 }} />
-              <Line type="monotone" dataKey="D" stroke="var(--color-chart-4)" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="A" stroke="#0EA5E9" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="B" stroke="#10B981" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="C" stroke="#F59E0B" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="D" stroke="#EF4444" strokeWidth={2} dot={{ r: 3 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
