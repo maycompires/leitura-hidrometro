@@ -146,6 +146,30 @@ ${blocosHtml}
     setTimeout(() => w.print(), 500);
   };
 
+  const handleAnalyze = async () => {
+    if (filtered.length === 0) {
+      toast.error("Sem dados no período para analisar");
+      return;
+    }
+    setAnalyzing(true);
+    setAnalysis("");
+    try {
+      const payload = filtered.map((r) => ({
+        bloco: r.bloco,
+        data_hora: r.data_hora,
+        consumo_m3: Number(r.consumo_m3),
+        leitura_atual: Number(r.leitura_atual),
+      }));
+      const res = await runAnalysis({ data: { readings: payload, period } });
+      setAnalysis(res.analysis);
+      toast.success("Análise concluída");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Falha na análise");
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
