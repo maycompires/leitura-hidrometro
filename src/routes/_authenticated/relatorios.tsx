@@ -213,6 +213,34 @@ ${blocosHtml}
         </Card>
       </div>
 
+      <Card className="p-4 shadow-soft border-sky-200/60 bg-gradient-to-br from-sky-50/60 to-transparent dark:from-sky-950/20">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-sky-600" />
+            <h2 className="text-sm font-medium">Análise de IA — anomalias de consumo</h2>
+          </div>
+          <Button size="sm" onClick={handleAnalyze} disabled={analyzing}>
+            {analyzing ? (
+              <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Analisando...</>
+            ) : (
+              <><Sparkles className="mr-2 h-4 w-4" />Analisar período</>
+            )}
+          </Button>
+        </div>
+        {!analysis && !analyzing && (
+          <p className="text-xs text-muted-foreground mt-3">
+            Detecta picos, quedas anormais e padrões fora da média por bloco usando IA.
+          </p>
+        )}
+        {analysis && (
+          <div className="mt-4 text-sm leading-relaxed whitespace-pre-wrap text-foreground/90 flex gap-2">
+            <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+            <div className="flex-1">{analysis}</div>
+          </div>
+        )}
+      </Card>
+
+
       <Card className="p-4 shadow-soft">
         <h2 className="text-sm font-medium mb-3">Consumo por bloco</h2>
         <div className="h-72 w-full">
