@@ -39,6 +39,9 @@ function groupKey(d: Date, p: Period) {
 
 function ReportsPage() {
   const [period, setPeriod] = useState<Period>("month");
+  const [analysis, setAnalysis] = useState<string>("");
+  const [analyzing, setAnalyzing] = useState(false);
+  const runAnalysis = useServerFn(analyzeConsumption);
   const { data: readings = [] } = useQuery({ queryKey: ["readings"], queryFn: () => fetchReadings() });
 
   const filtered = useMemo(() => {
