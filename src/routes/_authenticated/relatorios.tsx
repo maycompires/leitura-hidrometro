@@ -78,6 +78,34 @@ function ReportsPage() {
     return map;
   }, [filtered]);
 
+  const blocoColors: Record<Bloco, string> = { A: "#0EA5E9", B: "#10B981", C: "#F59E0B", D: "#EF4444" };
+
+  // Consumo diário por bloco (último leitura do dia - último do dia anterior), arredondado para inteiro
+  const dailyByBloco = useMemo(() => {
+    const out: Record<Bloco, { label: string; consumo: number }[]> = { A: [], B: [], C: [], D: [] };
+    for (const b of BLOCOS) {
+      const byDay = new Map<string, number>();
+      const sorted = [...byBlocoSorted[b]].sort(
+        (a, c) => new Date(a.data_hora).getTime() - new Date(c.data_hora).getTime(),
+      );
+      for (const r of sorted) {
+        const d = new Date(r.data_hora);
+        const key = d.toISOString().slice(0, 10);
+        byDay.set(key, Number(r.leitura_atual));
+      }
+      const days = [...byDay.entries()].sort(([a], [c]) => a.localeCompare(c));
+      let prev: number | null = null;
+      for (const [day, leitura] of days) {
+        const consumo = prev === null ? 0 : Math.round(leitura - prev);
+        prev = leitura;
+        const [y, m, dd] = day.split("-");
+        out[b].push({ label: `${dd}/${m}`, consumo });
+      }
+    }
+    return out;
+  }, [byBlocoSorted]);
+
+
   const exportCSV = () => {
     const lines: string[][] = [];
     for (const b of BLOCOS) {
@@ -292,6 +320,39 @@ ${blocosHtml}
           </ResponsiveContainer>
         </div>
       </Card>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {BLOCOS.map((b) => (
+          <Card key={b} className="p-4 shadow-soft">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-medium">Bloco {b} — consumo diário</h2>
+              <span className="inline-block h-2 w-2 rounded-full" style={{ background: blocoColors[b] }} />
+            </div>
+            <div className="h-56 w-full">
+              <ResponsiveContainer>
+                <BarChart data={dailyByBloco[b]}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                  <XAxis dataKey="label" stroke="var(--color-muted-foreground)" fontSize={11} />
+                  <YAxis stroke="var(--color-muted-foreground)" fontSize={11} allowDecimals={false} />
+                  <Tooltip
+                    formatter={(v: number) => [`${Math.round(Number(v))} m³`, "Consumo"]}
+                    contentStyle={{
+                      backgroundColor: "var(--color-popover)",
+                      border: "1px solid var(--color-border)",
+                      borderRadius: 8,
+                      color: "var(--color-popover-foreground)",
+                    }}
+                  />
+                  <Bar dataKey="consumo" fill={blocoColors[b]} radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            {dailyByBloco[b].length === 0 && (
+              <p className="text-xs text-muted-foreground text-center py-4">Sem leituras no período.</p>
+            )}
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }
