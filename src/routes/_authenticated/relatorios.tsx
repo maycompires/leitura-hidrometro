@@ -320,6 +320,39 @@ ${blocosHtml}
           </ResponsiveContainer>
         </div>
       </Card>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {BLOCOS.map((b) => (
+          <Card key={b} className="p-4 shadow-soft">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-medium">Bloco {b} — consumo diário</h2>
+              <span className="inline-block h-2 w-2 rounded-full" style={{ background: blocoColors[b] }} />
+            </div>
+            <div className="h-56 w-full">
+              <ResponsiveContainer>
+                <BarChart data={dailyByBloco[b]}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                  <XAxis dataKey="label" stroke="var(--color-muted-foreground)" fontSize={11} />
+                  <YAxis stroke="var(--color-muted-foreground)" fontSize={11} allowDecimals={false} />
+                  <Tooltip
+                    formatter={(v: number) => [`${Math.round(Number(v))} m³`, "Consumo"]}
+                    contentStyle={{
+                      backgroundColor: "var(--color-popover)",
+                      border: "1px solid var(--color-border)",
+                      borderRadius: 8,
+                      color: "var(--color-popover-foreground)",
+                    }}
+                  />
+                  <Bar dataKey="consumo" fill={blocoColors[b]} radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            {dailyByBloco[b].length === 0 && (
+              <p className="text-xs text-muted-foreground text-center py-4">Sem leituras no período.</p>
+            )}
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }
