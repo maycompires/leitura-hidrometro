@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,8 +9,9 @@ import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend,
   LineChart, Line,
 } from "recharts";
-import { Download } from "lucide-react";
+import { Download, Sparkles, Loader2, AlertTriangle } from "lucide-react";
 import { BLOCOS, fetchReadings, type Bloco, type Reading } from "@/lib/api";
+import { analyzeConsumption } from "@/lib/anomalies.functions";
 import { toast } from "sonner";
 import { fmtNum } from "@/lib/utils";
 
@@ -37,6 +39,9 @@ function groupKey(d: Date, p: Period) {
 
 function ReportsPage() {
   const [period, setPeriod] = useState<Period>("month");
+  const [analysis, setAnalysis] = useState<string>("");
+  const [analyzing, setAnalyzing] = useState(false);
+  const runAnalysis = useServerFn(analyzeConsumption);
   const { data: readings = [] } = useQuery({ queryKey: ["readings"], queryFn: () => fetchReadings() });
 
   const filtered = useMemo(() => {
@@ -141,6 +146,30 @@ ${blocosHtml}
     setTimeout(() => w.print(), 500);
   };
 
+  const handleAnalyze = async () => {
+    if (filtered.length === 0) {
+      toast.error("Sem dados no período para analisar");
+      return;
+    }
+    setAnalyzing(true);
+    setAnalysis("");
+    try {
+      const payload = filtered.map((r) => ({
+        bloco: r.bloco,
+        data_hora: r.data_hora,
+        consumo_m3: Number(r.consumo_m3),
+        leitura_atual: Number(r.leitura_atual),
+      }));
+      const res = await runAnalysis({ data: { readings: payload, period } });
+      setAnalysis(res.analysis);
+      toast.success("Análise concluída");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Falha na análise");
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
@@ -183,6 +212,34 @@ ${blocosHtml}
           <p className="text-2xl font-semibold tabular-nums mt-1">{fmtNum(totals.media)} m³</p>
         </Card>
       </div>
+
+      <Card className="p-4 shadow-soft border-sky-200/60 bg-gradient-to-br from-sky-50/60 to-transparent dark:from-sky-950/20">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-sky-600" />
+            <h2 className="text-sm font-medium">Análise de IA — anomalias de consumo</h2>
+          </div>
+          <Button size="sm" onClick={handleAnalyze} disabled={analyzing}>
+            {analyzing ? (
+              <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Analisando...</>
+            ) : (
+              <><Sparkles className="mr-2 h-4 w-4" />Analisar período</>
+            )}
+          </Button>
+        </div>
+        {!analysis && !analyzing && (
+          <p className="text-xs text-muted-foreground mt-3">
+            Detecta picos, quedas anormais e padrões fora da média por bloco usando IA.
+          </p>
+        )}
+        {analysis && (
+          <div className="mt-4 text-sm leading-relaxed whitespace-pre-wrap text-foreground/90 flex gap-2">
+            <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+            <div className="flex-1">{analysis}</div>
+          </div>
+        )}
+      </Card>
+
 
       <Card className="p-4 shadow-soft">
         <h2 className="text-sm font-medium mb-3">Consumo por bloco</h2>
