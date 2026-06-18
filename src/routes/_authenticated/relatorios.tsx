@@ -13,7 +13,7 @@ import { Download, Sparkles, Loader2, AlertTriangle } from "lucide-react";
 import { BLOCOS, fetchReadings, type Bloco, type Reading } from "@/lib/api";
 import { analyzeConsumption } from "@/lib/anomalies.functions";
 import { toast } from "sonner";
-import { fmtNum } from "@/lib/utils";
+import { fmtNum, fmtLeitura, fmtConsumo, fmtM3Total, divisorBloco } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/relatorios")({
   component: ReportsPage,
@@ -80,10 +80,11 @@ function ReportsPage() {
 
   const blocoColors: Record<Bloco, string> = { A: "#0EA5E9", B: "#10B981", C: "#F59E0B", D: "#EF4444" };
 
-  // Consumo diário por bloco (último leitura do dia - último do dia anterior), arredondado para inteiro
+  // Consumo diário por bloco (leitura do dia - leitura do dia anterior) convertido em m³ pela regra do bloco
   const dailyByBloco = useMemo(() => {
     const out: Record<Bloco, { label: string; consumo: number }[]> = { A: [], B: [], C: [], D: [] };
     for (const b of BLOCOS) {
+      const div = divisorBloco(b);
       const byDay = new Map<string, number>();
       const sorted = [...byBlocoSorted[b]].sort(
         (a, c) => new Date(a.data_hora).getTime() - new Date(c.data_hora).getTime(),
@@ -96,10 +97,10 @@ function ReportsPage() {
       const days = [...byDay.entries()].sort(([a], [c]) => a.localeCompare(c));
       let prev: number | null = null;
       for (const [day, leitura] of days) {
-        const consumo = prev === null ? 0 : Math.round(leitura - prev);
+        const consumo = prev === null ? 0 : Math.max(0, (leitura - prev) / div);
         prev = leitura;
-        const [y, m, dd] = day.split("-");
-        out[b].push({ label: `${dd}/${m}`, consumo });
+        const [, m, dd] = day.split("-");
+        out[b].push({ label: `${dd}/${m}`, consumo: Number(consumo.toFixed(3)) });
       }
     }
     return out;
@@ -110,16 +111,16 @@ function ReportsPage() {
     const lines: string[][] = [];
     for (const b of BLOCOS) {
       lines.push([`Bloco ${b}`]);
-      lines.push(["Data/Hora", "Leitura Atual", "Leitura Anterior", "Consumo (m³)"]);
+      lines.push(["Data/Hora", "Leitura Atual", "Leitura Anterior", "Consumo"]);
       for (const r of byBlocoSorted[b]) {
         lines.push([
           new Date(r.data_hora).toLocaleString("pt-BR"),
-          String(r.leitura_atual),
-          String(r.leitura_anterior),
-          String(r.consumo_m3),
+          fmtLeitura(r.leitura_atual, b),
+          fmtLeitura(r.leitura_anterior, b),
+          fmtConsumo(r.consumo_m3, b),
         ]);
       }
-      lines.push([`Total Bloco ${b}`, "", "", String(totals.byBloco[b])]);
+      lines.push([`Total Bloco ${b}`, "", "", fmtConsumo(totals.byBloco[b], b)]);
       lines.push([]);
     }
     const csv = lines.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(";")).join("\n");
@@ -163,7 +164,7 @@ th{background:#f1f5f9}
 <p class="meta">Período: ${period} · Gerado em ${new Date().toLocaleString("pt-BR")}</p>
 <div class="summary">
   <table><thead><tr>${BLOCOS.map((b) => `<th>Bloco ${b}</th>`).join("")}<th>Total Geral</th></tr></thead>
-  <tbody><tr>${BLOCOS.map((b) => `<td>${fmtNum(totals.byBloco[b])} m³</td>`).join("")}<td><strong>${fmtNum(totals.total)} m³</strong></td></tr></tbody></table>
+  <tbody><tr>${BLOCOS.map((b) => `<td>${fmtConsumo(totals.byBloco[b], b)}</td>`).join("")}<td><strong>${fmtM3Total(totals.total)}</strong></td></tr></tbody></table>
 </div>
 ${blocosHtml}
 </body></html>`;
@@ -224,8 +225,7 @@ ${blocosHtml}
         {BLOCOS.map((b) => (
           <Card key={b} className="p-4 shadow-soft">
             <p className="text-xs text-muted-foreground">Bloco {b}</p>
-            <p className="text-2xl font-semibold tabular-nums mt-1">{fmtNum(totals.byBloco[b])}</p>
-            <p className="text-xs text-muted-foreground">m³</p>
+            <p className="text-xl font-semibold tabular-nums mt-1">{fmtConsumo(totals.byBloco[b], b)}</p>
           </Card>
         ))}
       </div>
@@ -233,11 +233,11 @@ ${blocosHtml}
       <div className="grid grid-cols-2 gap-3">
         <Card className="p-4 shadow-soft">
           <p className="text-xs text-muted-foreground">Total acumulado</p>
-          <p className="text-2xl font-semibold tabular-nums mt-1">{fmtNum(totals.total)} m³</p>
+          <p className="text-xl font-semibold tabular-nums mt-1">{fmtM3Total(totals.total)}</p>
         </Card>
         <Card className="p-4 shadow-soft">
           <p className="text-xs text-muted-foreground">Média diária</p>
-          <p className="text-2xl font-semibold tabular-nums mt-1">{fmtNum(totals.media)} m³</p>
+          <p className="text-xl font-semibold tabular-nums mt-1">{fmtM3Total(totals.media)}</p>
         </Card>
       </div>
 
@@ -333,9 +333,9 @@ ${blocosHtml}
                 <BarChart data={dailyByBloco[b]}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                   <XAxis dataKey="label" stroke="var(--color-muted-foreground)" fontSize={11} />
-                  <YAxis stroke="var(--color-muted-foreground)" fontSize={11} allowDecimals={false} />
+                  <YAxis stroke="var(--color-muted-foreground)" fontSize={11} />
                   <Tooltip
-                    formatter={(v: number) => [`${Math.round(Number(v))} m³`, "Consumo"]}
+                    formatter={(v: number) => [fmtConsumo(Number(v), b), "Consumo"]}
                     contentStyle={{
                       backgroundColor: "var(--color-popover)",
                       border: "1px solid var(--color-border)",
