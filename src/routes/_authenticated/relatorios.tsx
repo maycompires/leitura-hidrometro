@@ -138,11 +138,11 @@ function ReportsPage() {
     const blocosHtml = BLOCOS.map((b) => `
 <section class="bloco">
   <h2>Bloco ${b}</h2>
-  <p class="meta">Total: <strong>${fmtNum(totals.byBloco[b])} m³</strong> · ${byBlocoSorted[b].length} leitura(s)</p>
+  <p class="meta">Total: <strong>${fmtConsumo(totals.byBloco[b], b)}</strong> · ${byBlocoSorted[b].length} leitura(s)</p>
   ${byBlocoSorted[b].length === 0
     ? `<p class="empty">Sem leituras no período.</p>`
-    : `<table><thead><tr><th>Data</th><th>Atual</th><th>Anterior</th><th>Consumo (m³)</th></tr></thead><tbody>
-${byBlocoSorted[b].map((r) => `<tr><td>${new Date(r.data_hora).toLocaleString("pt-BR")}</td><td>${fmtNum(r.leitura_atual)}</td><td>${fmtNum(r.leitura_anterior)}</td><td>${fmtNum(r.consumo_m3)}</td></tr>`).join("")}
+    : `<table><thead><tr><th>Data</th><th>Atual</th><th>Anterior</th><th>Consumo</th></tr></thead><tbody>
+${byBlocoSorted[b].map((r) => `<tr><td>${new Date(r.data_hora).toLocaleString("pt-BR")}</td><td>${fmtLeitura(r.leitura_atual, b)}</td><td>${fmtLeitura(r.leitura_anterior, b)}</td><td>${fmtConsumo(r.consumo_m3, b)}</td></tr>`).join("")}
 </tbody></table>`}
 </section>`).join("");
 
