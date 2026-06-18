@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { BLOCOS, fetchLastReadingByBloco, uploadHidrometroPhoto, type Bloco } from "@/lib/api";
 import { readMeterFromImage } from "@/lib/ocr.functions";
-import { fmtNum } from "@/lib/utils";
+import { fmtLeitura, litersDigits } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/leitura/$bloco")({
   parseParams: (p) => ({ bloco: z.enum(["A", "B", "C", "D"]).parse(p.bloco) as Bloco }),
@@ -109,7 +109,7 @@ function LeituraPage() {
           <h1 className="text-2xl font-semibold">Nova leitura — Bloco {bloco}</h1>
           {ultima && (
             <p className="text-sm text-muted-foreground">
-              Última: <span className="font-medium text-foreground">{fmtNum(ultima.leitura_atual)} m³</span> em{" "}
+              Última: <span className="font-medium text-foreground">{fmtLeitura(ultima.leitura_atual, bloco)}</span> em{" "}
               {new Date(ultima.data_hora).toLocaleDateString("pt-BR")}
             </p>
           )}
@@ -162,15 +162,19 @@ function LeituraPage() {
 
       <Card className="p-5 space-y-4 shadow-soft">
         <div className="space-y-2">
-          <Label htmlFor="valor">Leitura atual (m³)</Label>
+          <Label htmlFor="valor">Leitura do hidrômetro (número completo)</Label>
           <Input
             id="valor"
-            inputMode="decimal"
-            placeholder="Ex: 1234.56"
+            inputMode="numeric"
+            placeholder="Digite todos os dígitos do hidrômetro"
             value={valor}
             onChange={(e) => setValor(e.target.value)}
             className="text-2xl h-14 tabular-nums"
           />
+          <p className="text-xs text-muted-foreground">
+            No Bloco {bloco}, os últimos <strong>{litersDigits(bloco)}</strong> dígitos representam litros e os
+            anteriores m³. Ex.: {bloco === "B" ? "182697 → 1826 m³ 97 L" : "17518615 → 17518 m³ 615 L"}.
+          </p>
         </div>
 
         <div className="space-y-2">
