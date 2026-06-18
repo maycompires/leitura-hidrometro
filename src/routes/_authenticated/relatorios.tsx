@@ -13,7 +13,7 @@ import { Download, Sparkles, Loader2, AlertTriangle } from "lucide-react";
 import { BLOCOS, fetchReadings, type Bloco, type Reading } from "@/lib/api";
 import { analyzeConsumption } from "@/lib/anomalies.functions";
 import { toast } from "sonner";
-import { fmtNum, fmtLeitura, fmtConsumo, fmtM3Total, divisorBloco } from "@/lib/utils";
+import { fmtLeitura, fmtConsumo, fmtM3Total, divisorBloco } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/relatorios")({
   component: ReportsPage,

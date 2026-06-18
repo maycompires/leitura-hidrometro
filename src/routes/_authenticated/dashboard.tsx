@@ -6,7 +6,7 @@ import { Droplet, TrendingUp, TrendingDown, Minus, ArrowRight, Plus } from "luci
 import { BLOCOS, fetchReadings, type Bloco, type Reading } from "@/lib/api";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { cn, fmtNum, fmtLeitura, fmtConsumo, fmtM3Total } from "@/lib/utils";
+import { cn, fmtLeitura, fmtConsumo, fmtM3Total } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
