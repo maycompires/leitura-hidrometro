@@ -14,7 +14,7 @@ import { Pencil, Trash2, ImageIcon, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { BLOCOS, fetchProfiles, fetchReadings, signedPhotoUrl, type Bloco, type Reading } from "@/lib/api";
-import { fmtNum } from "@/lib/utils";
+import { fmtLeitura, fmtConsumo, litersDigits } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/historico")({
   component: HistoricoPage,
@@ -146,9 +146,9 @@ function HistoricoPage() {
                 <TableRow key={r.id}>
                   <TableCell className="whitespace-nowrap text-sm">{new Date(r.data_hora).toLocaleString("pt-BR")}</TableCell>
                   <TableCell><span className="rounded-md bg-primary-soft text-primary px-2 py-0.5 text-xs font-medium">{r.bloco}</span></TableCell>
-                  <TableCell className="text-right tabular-nums">{fmtNum(r.leitura_atual)}</TableCell>
-                  <TableCell className="text-right tabular-nums text-muted-foreground">{fmtNum(r.leitura_anterior)}</TableCell>
-                  <TableCell className="text-right tabular-nums font-medium">{fmtNum(r.consumo_m3)}</TableCell>
+                  <TableCell className="text-right tabular-nums whitespace-nowrap">{fmtLeitura(r.leitura_atual, r.bloco)}</TableCell>
+                  <TableCell className="text-right tabular-nums text-muted-foreground whitespace-nowrap">{fmtLeitura(r.leitura_anterior, r.bloco)}</TableCell>
+                  <TableCell className="text-right tabular-nums font-medium whitespace-nowrap">{fmtConsumo(r.consumo_m3, r.bloco)}</TableCell>
                   <TableCell className="text-sm">{profileMap[r.usuario_id] ?? "—"}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
@@ -176,8 +176,13 @@ function HistoricoPage() {
         <DialogContent>
           <DialogHeader><DialogTitle>Editar leitura — Bloco {editing?.bloco}</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            <Label>Leitura atual (m³)</Label>
-            <Input inputMode="decimal" value={editValor} onChange={(e) => setEditValor(e.target.value)} />
+            <Label>Leitura do hidrômetro (número completo)</Label>
+            <Input inputMode="numeric" value={editValor} onChange={(e) => setEditValor(e.target.value)} />
+            {editing && (
+              <p className="text-xs text-muted-foreground">
+                Últimos {litersDigits(editing.bloco)} dígitos = litros; anteriores = m³.
+              </p>
+            )}
             <Button className="w-full" onClick={() => update.mutate()} disabled={update.isPending}>
               {update.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Salvar
             </Button>
