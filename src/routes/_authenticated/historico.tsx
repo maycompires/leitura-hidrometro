@@ -36,7 +36,7 @@ function HistoricoPage() {
   });
   const { data: profiles = [] } = useQuery({ queryKey: ["profiles"], queryFn: fetchProfiles });
 
-  const profileMap = useMemo(() => Object.fromEntries(profiles.map((p) => [p.id, p.nome_completo || p.email || "Usuário"])), [profiles]);
+  const profileMap = useMemo(() => Object.fromEntries(profiles.map((p) => [p.id, p.nome_completo || "Usuário"])), [profiles]);
 
   const filtered = readings.filter((r) => {
     if (bloco !== "all" && r.bloco !== bloco) return false;
