@@ -45,6 +45,8 @@ export const analyzeConsumption = createServerFn({ method: "POST" })
 
     const prompt = `Analise os dados diários de consumo de água (m³) dos 4 blocos do condomínio no período "${data.period}" e identifique MUDANÇAS BRUSCAS de consumo (picos, quedas anormais, padrões fora da média) por bloco.
 
+IMPORTANTE: As leituras começaram em 15/06/2026. A primeira leitura de cada bloco já foi removida dos dados (pois tinha consumo zero por não haver leitura anterior). Considere APENAS as leituras fornecidas abaixo, sem mencionar consumos zerados iniciais.
+
 Dados:
 ${JSON.stringify(summary, null, 2)}
 
