@@ -16,7 +16,7 @@ export type Reading = {
   created_at: string;
 };
 
-export type Profile = { id: string; nome_completo: string; email: string | null };
+export type Profile = { id: string; nome_completo: string };
 
 export async function fetchReadings(filters?: { bloco?: Bloco; usuarioId?: string; from?: string; to?: string }) {
   let q = supabase.from("readings").select("*").order("data_hora", { ascending: false });
