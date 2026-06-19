@@ -50,13 +50,15 @@ function ReportsPage() {
   }, [readings, period]);
 
   const chartData = useMemo(() => {
-    const buckets: Record<string, Record<Bloco, number> & { label: string }> = {} as any;
+    const buckets: Record<string, Record<Bloco, number> & { label: string; sortKey: number }> = {} as any;
     for (const r of filtered) {
       const k = groupKey(new Date(r.data_hora), period);
-      if (!buckets[k]) buckets[k] = { label: k, A: 0, B: 0, C: 0, D: 0 } as any;
+      if (!buckets[k]) {
+        buckets[k] = { label: k, A: 0, B: 0, C: 0, D: 0, sortKey: new Date(r.data_hora).getTime() } as any;
+      }
       buckets[k][r.bloco] += Number(r.consumo_m3);
     }
-    return Object.values(buckets);
+    return Object.values(buckets).sort((a, b) => a.sortKey - b.sortKey);
   }, [filtered, period]);
 
   const totals = useMemo(() => {
