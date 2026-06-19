@@ -123,54 +123,66 @@ function HistoricoPage() {
         </div>
       </Card>
 
-      <Card className="shadow-soft overflow-hidden">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Data</TableHead>
-                <TableHead>Bloco</TableHead>
-                <TableHead className="text-right">Atual</TableHead>
-                <TableHead className="text-right">Anterior</TableHead>
-                <TableHead className="text-right">Consumo</TableHead>
-                <TableHead>Usuário</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
-                <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Carregando…</TableCell></TableRow>
-              ) : filtered.length === 0 ? (
-                <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Nenhuma leitura encontrada</TableCell></TableRow>
-              ) : filtered.map((r) => (
-                <TableRow key={r.id}>
-                  <TableCell className="whitespace-nowrap text-sm">{new Date(r.data_hora).toLocaleString("pt-BR")}</TableCell>
-                  <TableCell><span className="rounded-md bg-primary-soft text-primary px-2 py-0.5 text-xs font-medium">{r.bloco}</span></TableCell>
-                  <TableCell className="text-right tabular-nums whitespace-nowrap">{fmtLeitura(r.leitura_atual, r.bloco)}</TableCell>
-                  <TableCell className="text-right tabular-nums text-muted-foreground whitespace-nowrap">{fmtLeitura(r.leitura_anterior, r.bloco)}</TableCell>
-                  <TableCell className="text-right tabular-nums font-medium whitespace-nowrap">{fmtConsumo(r.consumo_m3, r.bloco)}</TableCell>
-                  <TableCell className="text-sm">{profileMap[r.usuario_id] ?? "—"}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-1">
-                      {r.foto_url && (
-                        <Button variant="ghost" size="icon" onClick={() => showPhoto(r.foto_url!)}>
-                          <ImageIcon className="h-4 w-4" />
-                        </Button>
-                      )}
-                      <Button variant="ghost" size="icon" onClick={() => { setEditing(r); setEditValor(String(r.leitura_atual)); }}>
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => confirm("Excluir esta leitura?") && del.mutate(r.id)}>
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </Card>
+      {isLoading ? (
+        <Card className="p-8 text-center text-muted-foreground shadow-soft">Carregando…</Card>
+      ) : filtered.length === 0 ? (
+        <Card className="p-8 text-center text-muted-foreground shadow-soft">Nenhuma leitura encontrada</Card>
+      ) : (
+        BLOCOS.filter((b) => filtered.some((r) => r.bloco === b)).map((b) => {
+          const rows = filtered.filter((r) => r.bloco === b);
+          return (
+            <Card key={b} className="shadow-soft overflow-hidden">
+              <div className="flex items-center justify-between px-4 py-3 border-b bg-muted/30">
+                <h2 className="font-semibold flex items-center gap-2">
+                  <span className="rounded-md bg-primary-soft text-primary px-2 py-0.5 text-xs">Bloco {b}</span>
+                </h2>
+                <span className="text-xs text-muted-foreground">{rows.length} leitura{rows.length === 1 ? "" : "s"}</span>
+              </div>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Data</TableHead>
+                      <TableHead className="text-right">Atual</TableHead>
+                      <TableHead className="text-right">Anterior</TableHead>
+                      <TableHead className="text-right">Consumo</TableHead>
+                      <TableHead>Usuário</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {rows.map((r) => (
+                      <TableRow key={r.id}>
+                        <TableCell className="whitespace-nowrap text-sm">{new Date(r.data_hora).toLocaleString("pt-BR")}</TableCell>
+                        <TableCell className="text-right tabular-nums whitespace-nowrap">{fmtLeitura(r.leitura_atual, r.bloco)}</TableCell>
+                        <TableCell className="text-right tabular-nums text-muted-foreground whitespace-nowrap">{fmtLeitura(r.leitura_anterior, r.bloco)}</TableCell>
+                        <TableCell className="text-right tabular-nums font-medium whitespace-nowrap">{fmtConsumo(r.consumo_m3, r.bloco)}</TableCell>
+                        <TableCell className="text-sm">{profileMap[r.usuario_id] ?? "—"}</TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-1">
+                            {r.foto_url && (
+                              <Button variant="ghost" size="icon" onClick={() => showPhoto(r.foto_url!)}>
+                                <ImageIcon className="h-4 w-4" />
+                              </Button>
+                            )}
+                            <Button variant="ghost" size="icon" onClick={() => { setEditing(r); setEditValor(String(r.leitura_atual)); }}>
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => confirm("Excluir esta leitura?") && del.mutate(r.id)}>
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </Card>
+          );
+        })
+      )}
+
 
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <DialogContent>
