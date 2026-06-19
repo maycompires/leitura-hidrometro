@@ -41,7 +41,7 @@ export async function fetchLastReadingByBloco(bloco: Bloco) {
 }
 
 export async function fetchProfiles() {
-  const { data, error } = await supabase.from("profiles").select("id, nome_completo, email");
+  const { data, error } = await supabase.from("profiles").select("id, nome_completo");
   if (error) throw error;
   return (data ?? []) as Profile[];
 }
