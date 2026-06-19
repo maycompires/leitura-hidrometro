@@ -305,11 +305,12 @@ ${blocosHtml}
               <XAxis dataKey="label" stroke="var(--color-muted-foreground)" fontSize={12} />
               <YAxis stroke="var(--color-muted-foreground)" fontSize={12} />
               <Tooltip
+                cursor={{ fill: 'transparent' }}
                 contentStyle={{
-                  backgroundColor: "var(--color-popover)",
-                  border: "1px solid var(--color-border)",
+                  backgroundColor: "var(--popover)",
+                  border: "1px solid var(--border)",
                   borderRadius: 8,
-                  color: "var(--color-popover-foreground)",
+                  color: "var(--popover-foreground)",
                 }}
               />
               <Legend />
@@ -336,12 +337,13 @@ ${blocosHtml}
                   <XAxis dataKey="label" stroke="var(--color-muted-foreground)" fontSize={11} />
                   <YAxis stroke="var(--color-muted-foreground)" fontSize={11} />
                   <Tooltip
+                    cursor={{ fill: 'transparent' }}
                     formatter={(v: number) => [fmtConsumo(Number(v), b), "Consumo"]}
                     contentStyle={{
-                      backgroundColor: "var(--color-popover)",
-                      border: "1px solid var(--color-border)",
+                      backgroundColor: "var(--popover)",
+                      border: "1px solid var(--border)",
                       borderRadius: 8,
-                      color: "var(--color-popover-foreground)",
+                      color: "var(--popover-foreground)",
                     }}
                   />
                   <Bar dataKey="consumo" fill={blocoColors[b]} radius={[4, 4, 0, 0]} />
