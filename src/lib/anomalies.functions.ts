@@ -29,6 +29,10 @@ export const analyzeConsumption = createServerFn({ method: "POST" })
     }
     for (const b of Object.keys(byBloco)) {
       byBloco[b].sort((a, c) => new Date(a.data_hora).getTime() - new Date(c.data_hora).getTime());
+      // Ignora a primeira leitura de cada bloco (consumo inicial = 0, sem leitura anterior)
+      if (byBloco[b].length > 0 && byBloco[b][0].consumo_m3 === 0) {
+        byBloco[b] = byBloco[b].slice(1);
+      }
     }
 
     const summary = Object.entries(byBloco).map(([b, arr]) => {
@@ -37,6 +41,7 @@ export const analyzeConsumption = createServerFn({ method: "POST" })
       const avg = vals.length ? total / vals.length : 0;
       return { bloco: b, leituras: arr.length, total, media: avg, serie: arr };
     });
+
 
     const prompt = `Analise os dados diários de consumo de água (m³) dos 4 blocos do condomínio no período "${data.period}" e identifique MUDANÇAS BRUSCAS de consumo (picos, quedas anormais, padrões fora da média) por bloco.
 
