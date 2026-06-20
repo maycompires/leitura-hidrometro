@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      alerts: {
+        Row: {
+          bloco: string
+          created_at: string
+          id: string
+          lido_por: string[]
+          mensagem: string
+          metadata: Json
+          reading_id: string | null
+          resolvido: boolean
+          severidade: string
+          tipo: string
+        }
+        Insert: {
+          bloco: string
+          created_at?: string
+          id?: string
+          lido_por?: string[]
+          mensagem: string
+          metadata?: Json
+          reading_id?: string | null
+          resolvido?: boolean
+          severidade?: string
+          tipo: string
+        }
+        Update: {
+          bloco?: string
+          created_at?: string
+          id?: string
+          lido_por?: string[]
+          mensagem?: string
+          metadata?: Json
+          reading_id?: string | null
+          resolvido?: boolean
+          severidade?: string
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alerts_reading_id_fkey"
+            columns: ["reading_id"]
+            isOneToOne: false
+            referencedRelation: "readings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -74,6 +121,60 @@ export type Database = {
           observacoes?: string | null
           updated_at?: string
           usuario_id?: string
+        }
+        Relationships: []
+      }
+      shared_reports: {
+        Row: {
+          blocos: string[]
+          created_at: string
+          criado_por: string
+          expires_at: string
+          id: string
+          period: string
+          token: string
+        }
+        Insert: {
+          blocos?: string[]
+          created_at?: string
+          criado_por: string
+          expires_at: string
+          id?: string
+          period: string
+          token: string
+        }
+        Update: {
+          blocos?: string[]
+          created_at?: string
+          criado_por?: string
+          expires_at?: string
+          id?: string
+          period?: string
+          token?: string
+        }
+        Relationships: []
+      }
+      user_preferences: {
+        Row: {
+          consumo_threshold_pct: number
+          created_at: string
+          dias_sem_leitura: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          consumo_threshold_pct?: number
+          created_at?: string
+          dias_sem_leitura?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          consumo_threshold_pct?: number
+          created_at?: string
+          dias_sem_leitura?: number
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
