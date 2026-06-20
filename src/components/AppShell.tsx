@@ -1,15 +1,17 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { Droplet, LayoutDashboard, History, BarChart3, Moon, Sun, LogOut } from "lucide-react";
+import { Droplet, LayoutDashboard, History, BarChart3, Moon, Sun, LogOut, Settings, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { Button } from "@/components/ui/button";
+import { AlertsBell } from "@/components/AlertsBell";
 import { cn } from "@/lib/utils";
 
 const nav = [
   { to: "/dashboard", label: "Início", icon: LayoutDashboard },
   { to: "/historico", label: "Histórico", icon: History },
   { to: "/relatorios", label: "Relatórios", icon: BarChart3 },
+  { to: "/alertas", label: "Alertas", icon: AlertTriangle },
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -52,6 +54,10 @@ export function AppShell({ children }: { children: ReactNode }) {
           </nav>
 
           <div className="flex items-center gap-1">
+            <AlertsBell />
+            <Button variant="ghost" size="icon" asChild aria-label="Preferências">
+              <Link to="/preferencias"><Settings className="h-4 w-4" /></Link>
+            </Button>
             <Button variant="ghost" size="icon" onClick={toggle} aria-label="Alternar tema">
               {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
@@ -75,7 +81,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 border-t border-border bg-background/95 backdrop-blur-lg">
-        <div className="grid grid-cols-3">
+        <div className="grid grid-cols-4">
           {nav.map((n) => {
             const active = location.pathname === n.to || location.pathname.startsWith(n.to + "/");
             return (
