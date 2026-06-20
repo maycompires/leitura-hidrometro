@@ -12,10 +12,14 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as RTokenRouteImport } from './routes/r.$token'
 import { Route as AuthenticatedRelatoriosRouteImport } from './routes/_authenticated/relatorios'
+import { Route as AuthenticatedPreferenciasRouteImport } from './routes/_authenticated/preferencias'
 import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedAlertasRouteImport } from './routes/_authenticated/alertas'
 import { Route as AuthenticatedLeituraBlocoRouteImport } from './routes/_authenticated/leitura.$bloco'
+import { Route as ApiPublicHooksCheckStaleReadingsRouteImport } from './routes/api/public/hooks/check-stale-readings'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -31,11 +35,22 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RTokenRoute = RTokenRouteImport.update({
+  id: '/r/$token',
+  path: '/r/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedRelatoriosRoute = AuthenticatedRelatoriosRouteImport.update({
   id: '/relatorios',
   path: '/relatorios',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPreferenciasRoute =
+  AuthenticatedPreferenciasRouteImport.update({
+    id: '/preferencias',
+    path: '/preferencias',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedHistoricoRoute = AuthenticatedHistoricoRouteImport.update({
   id: '/historico',
   path: '/historico',
@@ -46,71 +61,108 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAlertasRoute = AuthenticatedAlertasRouteImport.update({
+  id: '/alertas',
+  path: '/alertas',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedLeituraBlocoRoute =
   AuthenticatedLeituraBlocoRouteImport.update({
     id: '/leitura/$bloco',
     path: '/leitura/$bloco',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicHooksCheckStaleReadingsRoute =
+  ApiPublicHooksCheckStaleReadingsRouteImport.update({
+    id: '/api/public/hooks/check-stale-readings',
+    path: '/api/public/hooks/check-stale-readings',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/alertas': typeof AuthenticatedAlertasRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/historico': typeof AuthenticatedHistoricoRoute
+  '/preferencias': typeof AuthenticatedPreferenciasRoute
   '/relatorios': typeof AuthenticatedRelatoriosRoute
+  '/r/$token': typeof RTokenRoute
   '/leitura/$bloco': typeof AuthenticatedLeituraBlocoRoute
+  '/api/public/hooks/check-stale-readings': typeof ApiPublicHooksCheckStaleReadingsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/alertas': typeof AuthenticatedAlertasRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/historico': typeof AuthenticatedHistoricoRoute
+  '/preferencias': typeof AuthenticatedPreferenciasRoute
   '/relatorios': typeof AuthenticatedRelatoriosRoute
+  '/r/$token': typeof RTokenRoute
   '/leitura/$bloco': typeof AuthenticatedLeituraBlocoRoute
+  '/api/public/hooks/check-stale-readings': typeof ApiPublicHooksCheckStaleReadingsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/alertas': typeof AuthenticatedAlertasRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
+  '/_authenticated/preferencias': typeof AuthenticatedPreferenciasRoute
   '/_authenticated/relatorios': typeof AuthenticatedRelatoriosRoute
+  '/r/$token': typeof RTokenRoute
   '/_authenticated/leitura/$bloco': typeof AuthenticatedLeituraBlocoRoute
+  '/api/public/hooks/check-stale-readings': typeof ApiPublicHooksCheckStaleReadingsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/auth'
+    | '/alertas'
     | '/dashboard'
     | '/historico'
+    | '/preferencias'
     | '/relatorios'
+    | '/r/$token'
     | '/leitura/$bloco'
+    | '/api/public/hooks/check-stale-readings'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
+    | '/alertas'
     | '/dashboard'
     | '/historico'
+    | '/preferencias'
     | '/relatorios'
+    | '/r/$token'
     | '/leitura/$bloco'
+    | '/api/public/hooks/check-stale-readings'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/alertas'
     | '/_authenticated/dashboard'
     | '/_authenticated/historico'
+    | '/_authenticated/preferencias'
     | '/_authenticated/relatorios'
+    | '/r/$token'
     | '/_authenticated/leitura/$bloco'
+    | '/api/public/hooks/check-stale-readings'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  RTokenRoute: typeof RTokenRoute
+  ApiPublicHooksCheckStaleReadingsRoute: typeof ApiPublicHooksCheckStaleReadingsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -136,11 +188,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/r/$token': {
+      id: '/r/$token'
+      path: '/r/$token'
+      fullPath: '/r/$token'
+      preLoaderRoute: typeof RTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/relatorios': {
       id: '/_authenticated/relatorios'
       path: '/relatorios'
       fullPath: '/relatorios'
       preLoaderRoute: typeof AuthenticatedRelatoriosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/preferencias': {
+      id: '/_authenticated/preferencias'
+      path: '/preferencias'
+      fullPath: '/preferencias'
+      preLoaderRoute: typeof AuthenticatedPreferenciasRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/historico': {
@@ -157,6 +223,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/alertas': {
+      id: '/_authenticated/alertas'
+      path: '/alertas'
+      fullPath: '/alertas'
+      preLoaderRoute: typeof AuthenticatedAlertasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/leitura/$bloco': {
       id: '/_authenticated/leitura/$bloco'
       path: '/leitura/$bloco'
@@ -164,19 +237,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLeituraBlocoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/hooks/check-stale-readings': {
+      id: '/api/public/hooks/check-stale-readings'
+      path: '/api/public/hooks/check-stale-readings'
+      fullPath: '/api/public/hooks/check-stale-readings'
+      preLoaderRoute: typeof ApiPublicHooksCheckStaleReadingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAlertasRoute: typeof AuthenticatedAlertasRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedHistoricoRoute: typeof AuthenticatedHistoricoRoute
+  AuthenticatedPreferenciasRoute: typeof AuthenticatedPreferenciasRoute
   AuthenticatedRelatoriosRoute: typeof AuthenticatedRelatoriosRoute
   AuthenticatedLeituraBlocoRoute: typeof AuthenticatedLeituraBlocoRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAlertasRoute: AuthenticatedAlertasRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedHistoricoRoute: AuthenticatedHistoricoRoute,
+  AuthenticatedPreferenciasRoute: AuthenticatedPreferenciasRoute,
   AuthenticatedRelatoriosRoute: AuthenticatedRelatoriosRoute,
   AuthenticatedLeituraBlocoRoute: AuthenticatedLeituraBlocoRoute,
 }
@@ -188,6 +272,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  RTokenRoute: RTokenRoute,
+  ApiPublicHooksCheckStaleReadingsRoute: ApiPublicHooksCheckStaleReadingsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

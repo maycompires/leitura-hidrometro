@@ -68,7 +68,7 @@ export const fetchSharedReport = createServerFn({ method: "GET" })
       .from("readings")
       .select("id, bloco, data_hora, leitura_atual, leitura_anterior, consumo_m3")
       .gte("data_hora", start)
-      .in("bloco", share.blocos as string[])
+      .in("bloco", share.blocos as unknown as string[])
       .order("data_hora", { ascending: false });
     if (e2) throw new Error(e2.message);
     return {

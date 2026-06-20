@@ -8,7 +8,6 @@ export type AlertRow = {
   tipo: "consumo_alto" | "possivel_vazamento" | "leitura_atrasada" | "leitura_suspeita";
   severidade: "info" | "aviso" | "critico";
   mensagem: string;
-  metadata: Record<string, unknown>;
   reading_id: string | null;
   lido_por: string[];
   resolvido: boolean;
@@ -20,7 +19,7 @@ export const fetchAlerts = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("alerts")
-      .select("*")
+      .select("id, bloco, tipo, severidade, mensagem, reading_id, lido_por, resolvido, created_at")
       .order("created_at", { ascending: false })
       .limit(200);
     if (error) throw new Error(error.message);
