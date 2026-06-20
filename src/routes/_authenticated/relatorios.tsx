@@ -14,6 +14,7 @@ import { BLOCOS, fetchReadings, type Bloco, type Reading } from "@/lib/api";
 import { analyzeConsumption } from "@/lib/anomalies.functions";
 import { toast } from "sonner";
 import { fmtLeitura, fmtConsumo, fmtM3Total, divisorBloco } from "@/lib/utils";
+import { ShareReportDialog } from "@/components/ShareReportDialog";
 
 export const Route = createFileRoute("/_authenticated/relatorios")({
   component: ReportsPage,
@@ -208,9 +209,10 @@ ${blocosHtml}
           <h1 className="text-2xl font-semibold">Relatórios</h1>
           <p className="text-sm text-muted-foreground">Consumo agregado por bloco</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button variant="outline" onClick={exportCSV}><Download className="mr-2 h-4 w-4" />Excel/CSV</Button>
           <Button variant="outline" onClick={exportPDF}><Download className="mr-2 h-4 w-4" />PDF</Button>
+          <ShareReportDialog period={period} />
         </div>
       </div>
 
