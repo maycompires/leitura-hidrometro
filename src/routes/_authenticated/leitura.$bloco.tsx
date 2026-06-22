@@ -72,7 +72,7 @@ function LeituraPage() {
     mutationFn: async () => {
       const num = Number(valor.replace(",", "."));
       if (!Number.isFinite(num) || num < 0) throw new Error("Informe um valor numérico válido");
-      if (!user) throw new Error("Sessão expirada");
+      if (!dataLeitura) throw new Error("Informe a data da leitura");
       if (ultima && num < Number(ultima.leitura_atual)) {
         const ok = window.confirm("A leitura é menor que a anterior. Deseja continuar mesmo assim?");
         if (!ok) throw new Error("Cancelado");
