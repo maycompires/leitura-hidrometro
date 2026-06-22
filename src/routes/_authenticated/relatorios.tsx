@@ -362,7 +362,7 @@ ${blocosHtml}
               <h2 className="text-sm font-medium">Bloco {b} — consumo diário</h2>
               <span className="inline-block h-2 w-2 rounded-full" style={{ background: blocoColors[b] }} />
             </div>
-            <div className="h-56 w-full">
+            <div className="h-56 w-full" data-chart={`bloco-${b}`}>
               <ResponsiveContainer>
                 <BarChart data={dailyByBloco[b]}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
