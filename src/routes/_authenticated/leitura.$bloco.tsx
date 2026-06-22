@@ -28,7 +28,9 @@ function LeituraPage() {
   const { user } = useAuth();
   const ocr = useServerFn(readMeterFromImage);
 
+  const today = new Date().toISOString().split("T")[0];
   const [valor, setValor] = useState("");
+  const [dataLeitura, setDataLeitura] = useState(today);
   const [obs, setObs] = useState("");
   const [photoFile, setPhotoFile] = useState<Blob | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
