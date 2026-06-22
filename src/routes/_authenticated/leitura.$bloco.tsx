@@ -182,6 +182,17 @@ function LeituraPage() {
         </div>
 
         <div className="space-y-2">
+          <Label htmlFor="dataLeitura">Data da leitura</Label>
+          <Input
+            id="dataLeitura"
+            type="date"
+            value={dataLeitura}
+            onChange={(e) => setDataLeitura(e.target.value)}
+            className="h-12"
+          />
+        </div>
+
+        <div className="space-y-2">
           <Label htmlFor="obs">Observações (opcional)</Label>
           <Textarea
             id="obs"
