@@ -73,6 +73,7 @@ function LeituraPage() {
       const num = Number(valor.replace(",", "."));
       if (!Number.isFinite(num) || num < 0) throw new Error("Informe um valor numérico válido");
       if (!dataLeitura) throw new Error("Informe a data da leitura");
+      if (!user) throw new Error("Sessão expirada");
       if (ultima && num < Number(ultima.leitura_atual)) {
         const ok = window.confirm("A leitura é menor que a anterior. Deseja continuar mesmo assim?");
         if (!ok) throw new Error("Cancelado");
@@ -81,13 +82,14 @@ function LeituraPage() {
       if (photoFile) {
         foto_url = await uploadHidrometroPhoto(user.id, bloco, photoFile);
       }
+      const dateTime = new Date(`${dataLeitura}T12:00:00.000Z`).toISOString();
       const { error } = await supabase.from("readings").insert({
         bloco,
         leitura_atual: num,
         observacoes: obs || null,
         foto_url,
         usuario_id: user.id,
-        data_hora: new Date().toISOString(),
+        data_hora: dateTime,
       });
       if (error) throw error;
     },
