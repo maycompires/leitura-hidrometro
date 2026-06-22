@@ -136,23 +136,45 @@ function ReportsPage() {
     toast.success("CSV exportado");
   };
 
+  const captureChartSvg = (id: string): string => {
+    const el = document.querySelector(`[data-chart="${id}"] svg`);
+    if (!el) return "";
+    const clone = el.cloneNode(true) as SVGElement;
+    if (!clone.getAttribute("xmlns")) clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    const w = (el as SVGElement).clientWidth || 600;
+    const h = (el as SVGElement).clientHeight || 280;
+    if (!clone.getAttribute("viewBox")) clone.setAttribute("viewBox", `0 0 ${w} ${h}`);
+    clone.setAttribute("width", "100%");
+    clone.setAttribute("height", "auto");
+    return clone.outerHTML;
+  };
+
   const exportPDF = () => {
-    const blocosHtml = BLOCOS.map((b) => `
+    const chartGeral = captureChartSvg("geral-bar");
+    const chartEvol = captureChartSvg("geral-line");
+    const chartsBloco = BLOCOS.map((b) => ({ b, svg: captureChartSvg(`bloco-${b}`) }));
+
+    const blocosHtml = BLOCOS.map((b) => {
+      const chart = chartsBloco.find((c) => c.b === b)?.svg ?? "";
+      return `
 <section class="bloco">
   <h2>Bloco ${b}</h2>
   <p class="meta">Total: <strong>${fmtConsumo(totals.byBloco[b], b)}</strong> · ${byBlocoSorted[b].length} leitura(s)</p>
+  ${chart ? `<div class="chart">${chart}</div>` : ""}
   ${byBlocoSorted[b].length === 0
     ? `<p class="empty">Sem leituras no período.</p>`
     : `<table><thead><tr><th>Data</th><th>Atual</th><th>Anterior</th><th>Consumo</th></tr></thead><tbody>
 ${byBlocoSorted[b].map((r) => `<tr><td>${new Date(r.data_hora).toLocaleString("pt-BR")}</td><td>${fmtLeitura(r.leitura_atual, b)}</td><td>${fmtLeitura(r.leitura_anterior, b)}</td><td>${fmtConsumo(r.consumo_m3, b)}</td></tr>`).join("")}
 </tbody></table>`}
-</section>`).join("");
+</section>`;
+    }).join("");
 
     const html = `<!doctype html><html><head><meta charset="utf-8"><title>Relatório Terra do Sol</title>
 <style>
 body{font-family:system-ui,sans-serif;padding:32px;color:#1e293b}
 h1{color:#0369a1;margin:0 0 4px}
 h2{color:#0369a1;margin:0 0 8px;font-size:18px}
+h3{color:#0369a1;margin:24px 0 8px;font-size:15px}
 .meta{color:#64748b;font-size:13px;margin:0 0 12px}
 .empty{color:#94a3b8;font-style:italic}
 table{width:100%;border-collapse:collapse;margin-top:8px}
@@ -161,12 +183,19 @@ th{background:#f1f5f9}
 .bloco{margin-top:24px;page-break-inside:avoid}
 .bloco + .bloco{page-break-before:always}
 .summary{margin-top:16px}
+.chart{margin:8px 0 12px;page-break-inside:avoid}
+.chart svg{max-width:100%;height:auto}
+.charts-overview{page-break-after:always}
 </style></head><body>
 <h1>Condomínio Terra do Sol — Relatório de Consumo</h1>
 <p class="meta">Período: ${period} · Gerado em ${new Date().toLocaleString("pt-BR")}</p>
 <div class="summary">
   <table><thead><tr>${BLOCOS.map((b) => `<th>Bloco ${b}</th>`).join("")}<th>Total Geral</th></tr></thead>
   <tbody><tr>${BLOCOS.map((b) => `<td>${fmtConsumo(totals.byBloco[b], b)}</td>`).join("")}<td><strong>${fmtM3Total(totals.total)}</strong></td></tr></tbody></table>
+</div>
+<div class="charts-overview">
+  ${chartGeral ? `<h3>Consumo por bloco</h3><div class="chart">${chartGeral}</div>` : ""}
+  ${chartEvol ? `<h3>Evolução do consumo</h3><div class="chart">${chartEvol}</div>` : ""}
 </div>
 ${blocosHtml}
 </body></html>`;
@@ -273,7 +302,8 @@ ${blocosHtml}
 
       <Card className="p-4 shadow-soft">
         <h2 className="text-sm font-medium mb-3">Consumo por bloco</h2>
-        <div className="h-72 w-full">
+        <div className="h-72 w-full" data-chart="geral-bar">
+
           <ResponsiveContainer>
             <BarChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
@@ -300,7 +330,7 @@ ${blocosHtml}
 
       <Card className="p-4 shadow-soft">
         <h2 className="text-sm font-medium mb-3">Evolução do consumo</h2>
-        <div className="h-72 w-full">
+        <div className="h-72 w-full" data-chart="geral-line">
           <ResponsiveContainer>
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
@@ -332,7 +362,7 @@ ${blocosHtml}
               <h2 className="text-sm font-medium">Bloco {b} — consumo diário</h2>
               <span className="inline-block h-2 w-2 rounded-full" style={{ background: blocoColors[b] }} />
             </div>
-            <div className="h-56 w-full">
+            <div className="h-56 w-full" data-chart={`bloco-${b}`}>
               <ResponsiveContainer>
                 <BarChart data={dailyByBloco[b]}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
