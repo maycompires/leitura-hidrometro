@@ -330,7 +330,7 @@ ${blocosHtml}
 
       <Card className="p-4 shadow-soft">
         <h2 className="text-sm font-medium mb-3">Evolução do consumo</h2>
-        <div className="h-72 w-full">
+        <div className="h-72 w-full" data-chart="geral-line">
           <ResponsiveContainer>
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
