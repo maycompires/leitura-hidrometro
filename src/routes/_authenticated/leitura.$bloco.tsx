@@ -28,7 +28,9 @@ function LeituraPage() {
   const { user } = useAuth();
   const ocr = useServerFn(readMeterFromImage);
 
+  const today = new Date().toISOString().split("T")[0];
   const [valor, setValor] = useState("");
+  const [dataLeitura, setDataLeitura] = useState(today);
   const [obs, setObs] = useState("");
   const [photoFile, setPhotoFile] = useState<Blob | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -70,6 +72,7 @@ function LeituraPage() {
     mutationFn: async () => {
       const num = Number(valor.replace(",", "."));
       if (!Number.isFinite(num) || num < 0) throw new Error("Informe um valor numérico válido");
+      if (!dataLeitura) throw new Error("Informe a data da leitura");
       if (!user) throw new Error("Sessão expirada");
       if (ultima && num < Number(ultima.leitura_atual)) {
         const ok = window.confirm("A leitura é menor que a anterior. Deseja continuar mesmo assim?");
@@ -79,13 +82,14 @@ function LeituraPage() {
       if (photoFile) {
         foto_url = await uploadHidrometroPhoto(user.id, bloco, photoFile);
       }
+      const dateTime = new Date(`${dataLeitura}T12:00:00.000Z`).toISOString();
       const { error } = await supabase.from("readings").insert({
         bloco,
         leitura_atual: num,
         observacoes: obs || null,
         foto_url,
         usuario_id: user.id,
-        data_hora: new Date().toISOString(),
+        data_hora: dateTime,
       });
       if (error) throw error;
     },
@@ -175,6 +179,17 @@ function LeituraPage() {
             No Bloco {bloco}, os últimos <strong>{litersDigits(bloco)}</strong> dígitos representam litros e os
             anteriores m³. Ex.: {bloco === "B" ? "182697 → 1826 m³ 97 L" : "17518615 → 17518 m³ 615 L"}.
           </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="dataLeitura">Data da leitura</Label>
+          <Input
+            id="dataLeitura"
+            type="date"
+            value={dataLeitura}
+            onChange={(e) => setDataLeitura(e.target.value)}
+            className="h-12"
+          />
         </div>
 
         <div className="space-y-2">
