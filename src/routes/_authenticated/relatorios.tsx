@@ -393,6 +393,15 @@ ${blocosHtml}
                     }}
                   />
                   <Bar dataKey="consumo" fill={blocoColors[b]} radius={[4, 4, 0, 0]} />
+                  {mediaByBloco[b] > 0 && (
+                    <ReferenceLine
+                      y={mediaByBloco[b]}
+                      stroke={blocoColors[b]}
+                      strokeDasharray="4 4"
+                      strokeOpacity={0.7}
+                      label={{ value: `Média ${fmtConsumo(mediaByBloco[b], b)}`, position: "insideTopRight", fill: "var(--color-muted-foreground)", fontSize: 10 }}
+                    />
+                  )}
                 </BarChart>
               </ResponsiveContainer>
             </div>
