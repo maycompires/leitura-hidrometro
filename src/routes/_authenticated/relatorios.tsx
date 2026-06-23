@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend,
-  LineChart, Line,
+  LineChart, Line, ReferenceLine,
 } from "recharts";
 import { Download, Sparkles, Loader2, AlertTriangle } from "lucide-react";
 import { BLOCOS, fetchReadings, type Bloco, type Reading } from "@/lib/api";
