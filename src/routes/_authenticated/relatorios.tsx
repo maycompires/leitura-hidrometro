@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend,
-  LineChart, Line,
+  LineChart, Line, ReferenceLine,
 } from "recharts";
 import { Download, Sparkles, Loader2, AlertTriangle } from "lucide-react";
 import { BLOCOS, fetchReadings, type Bloco, type Reading } from "@/lib/api";
@@ -107,6 +107,16 @@ function ReportsPage() {
     }
     return out;
   }, [byBlocoSorted]);
+
+  // Média de consumo diário por bloco (ignora dias com consumo zero — ex.: leitura inicial)
+  const mediaByBloco = useMemo(() => {
+    const out: Record<Bloco, number> = { A: 0, B: 0, C: 0, D: 0 };
+    for (const b of BLOCOS) {
+      const vals = dailyByBloco[b].map((d) => d.consumo).filter((v) => v > 0);
+      out[b] = vals.length ? vals.reduce((a, c) => a + c, 0) / vals.length : 0;
+    }
+    return out;
+  }, [dailyByBloco]);
 
 
   const exportCSV = () => {
@@ -257,6 +267,7 @@ ${blocosHtml}
           <Card key={b} className="p-4 shadow-soft">
             <p className="text-xs text-muted-foreground">Bloco {b}</p>
             <p className="text-xl font-semibold tabular-nums mt-1">{fmtConsumo(totals.byBloco[b], b)}</p>
+            <p className="text-[11px] text-muted-foreground mt-1">Média/dia: <span className="tabular-nums font-medium text-foreground/80">{fmtConsumo(mediaByBloco[b], b)}</span></p>
           </Card>
         ))}
       </div>
@@ -358,10 +369,13 @@ ${blocosHtml}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {BLOCOS.map((b) => (
           <Card key={b} className="p-4 shadow-soft">
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-1">
               <h2 className="text-sm font-medium">Bloco {b} — consumo diário</h2>
               <span className="inline-block h-2 w-2 rounded-full" style={{ background: blocoColors[b] }} />
             </div>
+            <p className="text-xs text-muted-foreground mb-3">
+              Média diária: <span className="tabular-nums font-medium text-foreground/80">{fmtConsumo(mediaByBloco[b], b)}</span>
+            </p>
             <div className="h-56 w-full" data-chart={`bloco-${b}`}>
               <ResponsiveContainer>
                 <BarChart data={dailyByBloco[b]}>
@@ -379,6 +393,15 @@ ${blocosHtml}
                     }}
                   />
                   <Bar dataKey="consumo" fill={blocoColors[b]} radius={[4, 4, 0, 0]} />
+                  {mediaByBloco[b] > 0 && (
+                    <ReferenceLine
+                      y={mediaByBloco[b]}
+                      stroke={blocoColors[b]}
+                      strokeDasharray="4 4"
+                      strokeOpacity={0.7}
+                      label={{ value: `Média ${fmtConsumo(mediaByBloco[b], b)}`, position: "insideTopRight", fill: "var(--color-muted-foreground)", fontSize: 10 }}
+                    />
+                  )}
                 </BarChart>
               </ResponsiveContainer>
             </div>
