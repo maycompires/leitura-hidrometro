@@ -264,6 +264,22 @@ ${blocosHtml}
         </TabsList>
       </Tabs>
 
+      <Card className="p-3 shadow-soft">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div>
+            <p className="text-sm font-medium">Média por bloco</p>
+            <p className="text-xs text-muted-foreground">Escolha como tratar dias sem consumo (ex.: leitura inicial)</p>
+          </div>
+          <Tabs value={incluirZeros ? "incluir" : "ignorar"} onValueChange={(v) => setIncluirZeros(v === "incluir")}>
+            <TabsList>
+              <TabsTrigger value="ignorar">Ignorar zeros</TabsTrigger>
+              <TabsTrigger value="incluir">Incluir zeros</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+      </Card>
+
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {BLOCOS.map((b) => (
           <Card key={b} className="p-4 shadow-soft">
