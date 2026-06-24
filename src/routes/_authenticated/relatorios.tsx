@@ -47,9 +47,8 @@ function ReportsPage() {
 
   const filtered = useMemo(() => {
     const start = periodStart(period);
-    const inPeriod = readings.filter((r) => new Date(r.data_hora) >= start);
-    return incluirZeros ? inPeriod : inPeriod.filter((r) => Number(r.consumo_m3) > 0);
-  }, [readings, period, incluirZeros]);
+    return readings.filter((r) => new Date(r.data_hora) >= start);
+  }, [readings, period]);
 
   const chartData = useMemo(() => {
     const buckets: Record<string, Record<Bloco, number> & { label: string; sortKey: number }> = {} as any;
@@ -104,23 +103,22 @@ function ReportsPage() {
         const consumo = prev === null ? 0 : Math.max(0, (leitura - prev) / div);
         prev = leitura;
         const [, m, dd] = day.split("-");
-        const entry = { label: `${dd}/${m}`, consumo: Number(consumo.toFixed(3)) };
-        if (!incluirZeros && entry.consumo === 0) continue;
-        out[b].push(entry);
+        out[b].push({ label: `${dd}/${m}`, consumo: Number(consumo.toFixed(3)) });
       }
     }
     return out;
-  }, [byBlocoSorted, incluirZeros]);
+  }, [byBlocoSorted]);
 
-  // Média de consumo diário por bloco (já reflete o seletor via dailyByBloco)
+  // Média de consumo diário por bloco — opcionalmente ignora dias com consumo zero
   const mediaByBloco = useMemo(() => {
     const out: Record<Bloco, number> = { A: 0, B: 0, C: 0, D: 0 };
     for (const b of BLOCOS) {
-      const vals = dailyByBloco[b].map((d) => d.consumo);
+      const all = dailyByBloco[b].map((d) => d.consumo);
+      const vals = incluirZeros ? all : all.filter((v) => v > 0);
       out[b] = vals.length ? vals.reduce((a, c) => a + c, 0) / vals.length : 0;
     }
     return out;
-  }, [dailyByBloco]);
+  }, [dailyByBloco, incluirZeros]);
 
 
   const exportCSV = () => {
@@ -269,8 +267,8 @@ ${blocosHtml}
       <Card className="p-3 shadow-soft">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div>
-            <p className="text-sm font-medium">Tratamento de zeros</p>
-            <p className="text-xs text-muted-foreground">Aplica-se a todos os gráficos, totais e médias do relatório</p>
+            <p className="text-sm font-medium">Média por bloco</p>
+            <p className="text-xs text-muted-foreground">Escolha como tratar dias sem consumo (ex.: leitura inicial)</p>
           </div>
           <Tabs value={incluirZeros ? "incluir" : "ignorar"} onValueChange={(v) => setIncluirZeros(v === "incluir")}>
             <TabsList>
