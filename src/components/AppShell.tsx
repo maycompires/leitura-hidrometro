@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { Droplet, LayoutDashboard, History, BarChart3, Moon, Sun, LogOut } from "lucide-react";
+import { Droplet, LayoutDashboard, History, BarChart3, Moon, Sun, LogOut, MessageCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ const nav = [
   { to: "/dashboard", label: "Início", icon: LayoutDashboard },
   { to: "/historico", label: "Histórico", icon: History },
   { to: "/relatorios", label: "Relatórios", icon: BarChart3 },
+  { to: "/chat", label: "IA", icon: MessageCircle },
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -75,7 +76,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 border-t border-border bg-background/95 backdrop-blur-lg">
-        <div className="grid grid-cols-3">
+        <div className="grid grid-cols-4">
           {nav.map((n) => {
             const active = location.pathname === n.to || location.pathname.startsWith(n.to + "/");
             return (
