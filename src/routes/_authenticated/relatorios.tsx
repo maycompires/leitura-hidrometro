@@ -109,15 +109,16 @@ function ReportsPage() {
     return out;
   }, [byBlocoSorted]);
 
-  // Média de consumo diário por bloco (ignora dias com consumo zero — ex.: leitura inicial)
+  // Média de consumo diário por bloco — opcionalmente ignora dias com consumo zero
   const mediaByBloco = useMemo(() => {
     const out: Record<Bloco, number> = { A: 0, B: 0, C: 0, D: 0 };
     for (const b of BLOCOS) {
-      const vals = dailyByBloco[b].map((d) => d.consumo).filter((v) => v > 0);
+      const all = dailyByBloco[b].map((d) => d.consumo);
+      const vals = incluirZeros ? all : all.filter((v) => v > 0);
       out[b] = vals.length ? vals.reduce((a, c) => a + c, 0) / vals.length : 0;
     }
     return out;
-  }, [dailyByBloco]);
+  }, [dailyByBloco, incluirZeros]);
 
 
   const exportCSV = () => {
