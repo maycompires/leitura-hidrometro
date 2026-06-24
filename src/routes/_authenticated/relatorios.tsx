@@ -299,29 +299,35 @@ ${blocosHtml}
       <Card className="p-4 shadow-soft border-sky-200/60 bg-gradient-to-br from-sky-50/60 to-transparent dark:from-sky-950/20">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-sky-600" />
-            <h2 className="text-sm font-medium">Análise de IA — anomalias de consumo</h2>
+            <MessageSquare className="h-4 w-4 text-sky-600" />
+            <h2 className="text-sm font-medium">Chat com IA sobre o consumo</h2>
           </div>
-          <Button size="sm" onClick={handleAnalyze} disabled={analyzing}>
-            {analyzing ? (
-              <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Analisando...</>
-            ) : (
-              <><Sparkles className="mr-2 h-4 w-4" />Analisar período</>
-            )}
+          <Button asChild size="sm">
+            <Link to="/chat">
+              {threads.length > 0 ? "Abrir chat" : "Iniciar conversa"}
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
           </Button>
         </div>
-        {!analysis && !analyzing && (
-          <p className="text-xs text-muted-foreground mt-3">
-            Detecta picos, quedas anormais e padrões fora da média por bloco usando IA.
-          </p>
-        )}
-        {analysis && (
-          <div className="mt-4 text-sm leading-relaxed whitespace-pre-wrap text-foreground/90 flex gap-2">
-            <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
-            <div className="flex-1">{analysis}</div>
+        <p className="text-xs text-muted-foreground mt-3">
+          Pergunte sobre picos, médias, comparações entre blocos — ou peça um relatório em PDF e o chat gera automaticamente.
+        </p>
+        {threads.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {threads.slice(0, 3).map((t) => (
+              <Link
+                key={t.id}
+                to="/chat/$threadId"
+                params={{ threadId: t.id }}
+                className="text-xs rounded-full border border-border/60 bg-background/60 px-3 py-1 hover:bg-muted truncate max-w-[220px]"
+              >
+                {t.title}
+              </Link>
+            ))}
           </div>
         )}
       </Card>
+
 
 
       <Card className="p-4 shadow-soft">
