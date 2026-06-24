@@ -70,11 +70,12 @@ export const loadThread = createServerFn({ method: "GET" })
       .order("created_at", { ascending: true });
     if (error) throw new Error(error.message);
 
-    const messages: UIMessage[] = (rows ?? []).map((r) => ({
-      id: r.id,
-      role: r.role as UIMessage["role"],
-      parts: (r.parts as UIMessage["parts"]) ?? [],
+    const messages = (rows ?? []).map((r) => ({
+      id: r.id as string,
+      role: r.role as "user" | "assistant" | "system",
+      parts: r.parts as Array<{ type: string; [k: string]: unknown }>,
     }));
 
     return { thread, messages };
   });
+
