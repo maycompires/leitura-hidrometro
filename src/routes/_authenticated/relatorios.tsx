@@ -40,11 +40,11 @@ function groupKey(d: Date, p: Period) {
 
 function ReportsPage() {
   const [period, setPeriod] = useState<Period>("month");
-  const [analysis, setAnalysis] = useState<string>("");
-  const [analyzing, setAnalyzing] = useState(false);
   const [incluirZeros, setIncluirZeros] = useState(false);
-  const runAnalysis = useServerFn(analyzeConsumption);
+  const fetchThreads = useServerFn(listThreads);
   const { data: readings = [] } = useQuery({ queryKey: ["readings"], queryFn: () => fetchReadings() });
+  const { data: threads = [] } = useQuery({ queryKey: ["chat-threads"], queryFn: () => fetchThreads() });
+
 
   const filtered = useMemo(() => {
     const start = periodStart(period);
