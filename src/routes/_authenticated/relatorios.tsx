@@ -1,7 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,12 +9,11 @@ import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend,
   LineChart, Line, ReferenceLine,
 } from "recharts";
-import { Download, MessageSquare, ArrowRight } from "lucide-react";
+import { Download, Sparkles, Loader2, AlertTriangle } from "lucide-react";
 import { BLOCOS, fetchReadings, type Bloco, type Reading } from "@/lib/api";
-import { listThreads } from "@/lib/chat.functions";
+import { analyzeConsumption } from "@/lib/anomalies.functions";
 import { toast } from "sonner";
 import { fmtLeitura, fmtConsumo, fmtM3Total, divisorBloco } from "@/lib/utils";
-
 
 export const Route = createFileRoute("/_authenticated/relatorios")({
   component: ReportsPage,
@@ -40,11 +39,11 @@ function groupKey(d: Date, p: Period) {
 
 function ReportsPage() {
   const [period, setPeriod] = useState<Period>("month");
+  const [analysis, setAnalysis] = useState<string>("");
+  const [analyzing, setAnalyzing] = useState(false);
   const [incluirZeros, setIncluirZeros] = useState(false);
-  const fetchThreads = useServerFn(listThreads);
+  const runAnalysis = useServerFn(analyzeConsumption);
   const { data: readings = [] } = useQuery({ queryKey: ["readings"], queryFn: () => fetchReadings() });
-  const { data: threads = [] } = useQuery({ queryKey: ["chat-threads"], queryFn: () => fetchThreads() });
-
 
   const filtered = useMemo(() => {
     const start = periodStart(period);
@@ -221,21 +220,29 @@ ${blocosHtml}
     setTimeout(() => w.print(), 500);
   };
 
-  // Auto-export do PDF quando vier do chat
-  const autoTried = useRef(false);
-  useEffect(() => {
-    if (autoTried.current) return;
+  const handleAnalyze = async () => {
+    if (filtered.length === 0) {
+      toast.error("Sem dados no período para analisar");
+      return;
+    }
+    setAnalyzing(true);
+    setAnalysis("");
     try {
-      if (sessionStorage.getItem("autoExportPDF") === "1") {
-        autoTried.current = true;
-        sessionStorage.removeItem("autoExportPDF");
-        // aguarda gráficos renderizarem para o SVG estar disponível
-        setTimeout(() => exportPDF(), 700);
-      }
-    } catch {}
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [readings]);
-
+      const payload = filtered.map((r) => ({
+        bloco: r.bloco,
+        data_hora: r.data_hora,
+        consumo_m3: Number(r.consumo_m3),
+        leitura_atual: Number(r.leitura_atual),
+      }));
+      const res = await runAnalysis({ data: { readings: payload, period } });
+      setAnalysis(res.analysis);
+      toast.success("Análise concluída");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Falha na análise");
+    } finally {
+      setAnalyzing(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -299,35 +306,29 @@ ${blocosHtml}
       <Card className="p-4 shadow-soft border-sky-200/60 bg-gradient-to-br from-sky-50/60 to-transparent dark:from-sky-950/20">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2">
-            <MessageSquare className="h-4 w-4 text-sky-600" />
-            <h2 className="text-sm font-medium">Chat com IA sobre o consumo</h2>
+            <Sparkles className="h-4 w-4 text-sky-600" />
+            <h2 className="text-sm font-medium">Análise de IA — anomalias de consumo</h2>
           </div>
-          <Button asChild size="sm">
-            <Link to="/chat">
-              {threads.length > 0 ? "Abrir chat" : "Iniciar conversa"}
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
+          <Button size="sm" onClick={handleAnalyze} disabled={analyzing}>
+            {analyzing ? (
+              <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Analisando...</>
+            ) : (
+              <><Sparkles className="mr-2 h-4 w-4" />Analisar período</>
+            )}
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground mt-3">
-          Pergunte sobre picos, médias, comparações entre blocos — ou peça um relatório em PDF e o chat gera automaticamente.
-        </p>
-        {threads.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-2">
-            {threads.slice(0, 3).map((t) => (
-              <Link
-                key={t.id}
-                to="/chat/$threadId"
-                params={{ threadId: t.id }}
-                className="text-xs rounded-full border border-border/60 bg-background/60 px-3 py-1 hover:bg-muted truncate max-w-[220px]"
-              >
-                {t.title}
-              </Link>
-            ))}
+        {!analysis && !analyzing && (
+          <p className="text-xs text-muted-foreground mt-3">
+            Detecta picos, quedas anormais e padrões fora da média por bloco usando IA.
+          </p>
+        )}
+        {analysis && (
+          <div className="mt-4 text-sm leading-relaxed whitespace-pre-wrap text-foreground/90 flex gap-2">
+            <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+            <div className="flex-1">{analysis}</div>
           </div>
         )}
       </Card>
-
 
 
       <Card className="p-4 shadow-soft">
