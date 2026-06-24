@@ -262,12 +262,14 @@ function ChatWindow({
     if (triggeredExport.current) return;
     const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant");
     if (!lastAssistant) return;
-    const tool = lastAssistant.parts.find(
-      (p) =>
-        (p.type === "tool-exportar_relatorio_pdf" || p.type === "dynamic-tool") &&
-        // @ts-expect-error narrow at runtime
-        (p.state === "output-available" || p.output != null),
-    );
+    const tool = lastAssistant.parts.find((p) => {
+      const tp = p as { type: string; state?: string };
+      return (
+        (tp.type === "tool-exportar_relatorio_pdf" || tp.type === "dynamic-tool") &&
+        tp.state === "output-available"
+      );
+    });
+
     if (tool) {
       triggeredExport.current = true;
       try {
