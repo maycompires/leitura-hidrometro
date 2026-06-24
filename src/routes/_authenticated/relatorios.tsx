@@ -221,29 +221,21 @@ ${blocosHtml}
     setTimeout(() => w.print(), 500);
   };
 
-  const handleAnalyze = async () => {
-    if (filtered.length === 0) {
-      toast.error("Sem dados no período para analisar");
-      return;
-    }
-    setAnalyzing(true);
-    setAnalysis("");
+  // Auto-export do PDF quando vier do chat
+  const autoTried = useRef(false);
+  useEffect(() => {
+    if (autoTried.current) return;
     try {
-      const payload = filtered.map((r) => ({
-        bloco: r.bloco,
-        data_hora: r.data_hora,
-        consumo_m3: Number(r.consumo_m3),
-        leitura_atual: Number(r.leitura_atual),
-      }));
-      const res = await runAnalysis({ data: { readings: payload, period } });
-      setAnalysis(res.analysis);
-      toast.success("Análise concluída");
-    } catch (e: any) {
-      toast.error(e?.message ?? "Falha na análise");
-    } finally {
-      setAnalyzing(false);
-    }
-  };
+      if (sessionStorage.getItem("autoExportPDF") === "1") {
+        autoTried.current = true;
+        sessionStorage.removeItem("autoExportPDF");
+        // aguarda gráficos renderizarem para o SVG estar disponível
+        setTimeout(() => exportPDF(), 700);
+      }
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [readings]);
+
 
   return (
     <div className="space-y-6">
