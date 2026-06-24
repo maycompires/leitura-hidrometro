@@ -163,7 +163,7 @@ Use as ferramentas disponíveis para consultar leituras, consumo e alertas reais
 Observação importante: o Bloco B usa divisor de 100 (leituras em centenas de litros), os Blocos A e C usam divisor de 1000 (litros).
 Quando exibir números, use unidades claras (m³, litros) e formate com 2-3 casas decimais.
 Forneça análises, tendências e insights quando possível.`,
-          messages: convertToModelMessages(messages),
+          messages: await convertToModelMessages(messages),
           tools,
           stopWhen: stepCountIs(8),
         });
