@@ -269,8 +269,8 @@ ${blocosHtml}
       <Card className="p-3 shadow-soft">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div>
-            <p className="text-sm font-medium">Média por bloco</p>
-            <p className="text-xs text-muted-foreground">Escolha como tratar dias sem consumo (ex.: leitura inicial)</p>
+            <p className="text-sm font-medium">Tratamento de zeros</p>
+            <p className="text-xs text-muted-foreground">Aplica-se a todos os gráficos, totais e médias do relatório</p>
           </div>
           <Tabs value={incluirZeros ? "incluir" : "ignorar"} onValueChange={(v) => setIncluirZeros(v === "incluir")}>
             <TabsList>
