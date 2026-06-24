@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { listThreads, createThread } from "@/lib/chat.functions";
 import { Loader2 } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/chat/")({
+export const Route = createFileRoute("/_authenticated/chat")({
   component: ChatIndex,
 });
 
