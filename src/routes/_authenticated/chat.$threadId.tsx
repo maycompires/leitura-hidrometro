@@ -323,15 +323,19 @@ function ChatWindow({
                     const tp = part as unknown as ToolPart;
                     return (
                       <Tool key={i} defaultOpen={false}>
-                        <ToolHeader
-                          type={tp.type}
-                          state={tp.state}
-                          toolName={
-                            tp.type === "dynamic-tool"
-                              ? ((part as { toolName?: string }).toolName ?? "tool")
-                              : tp.type.replace(/^tool-/, "")
-                          }
-                        />
+                        {tp.type === "dynamic-tool" ? (
+                          <ToolHeader
+                            type="dynamic-tool"
+                            state={tp.state}
+                            toolName={(part as { toolName?: string }).toolName ?? "tool"}
+                          />
+                        ) : (
+                          <ToolHeader
+                            type={tp.type as `tool-${string}`}
+                            state={tp.state}
+                          />
+                        )}
+
 
                         <ToolContent>
                           {tp.input != null && <ToolInput input={tp.input} />}
