@@ -14,6 +14,7 @@ import { BLOCOS, fetchReadings, type Bloco, type Reading } from "@/lib/api";
 import { analyzeConsumption } from "@/lib/anomalies.functions";
 import { toast } from "sonner";
 import { fmtLeitura, fmtConsumo, fmtM3Total, divisorBloco } from "@/lib/utils";
+import { mediaIgnorandoZeroInicial } from "@/lib/media";
 
 export const Route = createFileRoute("/_authenticated/relatorios")({
   component: ReportsPage,
@@ -111,10 +112,7 @@ function ReportsPage() {
   // Média de consumo diário por bloco (ignora a primeira leitura — consumo inicial zero)
   const mediaByBloco = useMemo(() => {
     const out: Record<Bloco, number> = { A: 0, B: 0, C: 0, D: 0 };
-    for (const b of BLOCOS) {
-      const vals = dailyByBloco[b].slice(1).map((d) => d.consumo);
-      out[b] = vals.length ? vals.reduce((a, c) => a + c, 0) / vals.length : 0;
-    }
+    for (const b of BLOCOS) out[b] = mediaIgnorandoZeroInicial(dailyByBloco[b]);
     return out;
   }, [dailyByBloco]);
 
