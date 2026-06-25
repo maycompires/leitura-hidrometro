@@ -264,12 +264,32 @@ ${blocosHtml}
         </TabsList>
       </Tabs>
 
+      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <Switch
+          id="incluir-zeros"
+          checked={incluirZeros}
+          onCheckedChange={setIncluirZeros}
+          data-testid="toggle-incluir-zeros"
+        />
+        <Label htmlFor="incluir-zeros" className="cursor-pointer">
+          {incluirZeros ? "Incluindo zeros na média" : "Ignorando zero inicial da média"}
+        </Label>
+      </div>
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {BLOCOS.map((b) => (
           <Card key={b} className="p-4 shadow-soft">
             <p className="text-xs text-muted-foreground">Bloco {b}</p>
             <p className="text-xl font-semibold tabular-nums mt-1">{fmtConsumo(totals.byBloco[b], b)}</p>
-            <p className="text-[11px] text-muted-foreground mt-1">Média/dia: <span className="tabular-nums font-medium text-foreground/80">{fmtConsumo(mediaByBloco[b], b)}</span></p>
+            <p className="text-[11px] text-muted-foreground mt-1">
+              Média/dia:{" "}
+              <span
+                className="tabular-nums font-medium text-foreground/80"
+                data-testid={`media-bloco-${b}`}
+              >
+                {fmtConsumo(mediaByBloco[b], b)}
+              </span>
+            </p>
           </Card>
         ))}
       </div>
