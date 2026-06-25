@@ -41,7 +41,6 @@ function ReportsPage() {
   const [period, setPeriod] = useState<Period>("month");
   const [analysis, setAnalysis] = useState<string>("");
   const [analyzing, setAnalyzing] = useState(false);
-  const [incluirZeros, setIncluirZeros] = useState(false);
   const runAnalysis = useServerFn(analyzeConsumption);
   const { data: readings = [] } = useQuery({ queryKey: ["readings"], queryFn: () => fetchReadings() });
 
@@ -109,16 +108,15 @@ function ReportsPage() {
     return out;
   }, [byBlocoSorted]);
 
-  // Média de consumo diário por bloco — opcionalmente ignora dias com consumo zero
+  // Média de consumo diário por bloco (ignora dias com consumo zero — ex.: leitura inicial)
   const mediaByBloco = useMemo(() => {
     const out: Record<Bloco, number> = { A: 0, B: 0, C: 0, D: 0 };
     for (const b of BLOCOS) {
-      const all = dailyByBloco[b].map((d) => d.consumo);
-      const vals = incluirZeros ? all : all.filter((v) => v > 0);
+      const vals = dailyByBloco[b].map((d) => d.consumo).filter((v) => v > 0);
       out[b] = vals.length ? vals.reduce((a, c) => a + c, 0) / vals.length : 0;
     }
     return out;
-  }, [dailyByBloco, incluirZeros]);
+  }, [dailyByBloco]);
 
 
   const exportCSV = () => {
@@ -263,22 +261,6 @@ ${blocosHtml}
           <TabsTrigger value="year">Ano</TabsTrigger>
         </TabsList>
       </Tabs>
-
-      <Card className="p-3 shadow-soft">
-        <div className="flex items-center justify-between gap-3 flex-wrap">
-          <div>
-            <p className="text-sm font-medium">Média por bloco</p>
-            <p className="text-xs text-muted-foreground">Escolha como tratar dias sem consumo (ex.: leitura inicial)</p>
-          </div>
-          <Tabs value={incluirZeros ? "incluir" : "ignorar"} onValueChange={(v) => setIncluirZeros(v === "incluir")}>
-            <TabsList>
-              <TabsTrigger value="ignorar">Ignorar zeros</TabsTrigger>
-              <TabsTrigger value="incluir">Incluir zeros</TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
-      </Card>
-
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {BLOCOS.map((b) => (
