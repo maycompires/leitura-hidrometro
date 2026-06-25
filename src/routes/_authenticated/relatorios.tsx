@@ -14,6 +14,7 @@ import { BLOCOS, fetchReadings, type Bloco, type Reading } from "@/lib/api";
 import { analyzeConsumption } from "@/lib/anomalies.functions";
 import { toast } from "sonner";
 import { fmtLeitura, fmtConsumo, fmtM3Total, divisorBloco } from "@/lib/utils";
+import { mediaIgnorandoZeroInicial } from "@/lib/media";
 
 export const Route = createFileRoute("/_authenticated/relatorios")({
   component: ReportsPage,
