@@ -112,12 +112,13 @@ export function ReportsPage() {
     return out;
   }, [byBlocoSorted]);
 
-  // Média de consumo diário por bloco (ignora a primeira leitura — consumo inicial zero)
+  // Média de consumo diário por bloco — alterna entre ignorar a primeira leitura (consumo inicial zero) ou incluir todos os dias.
   const mediaByBloco = useMemo(() => {
     const out: Record<Bloco, number> = { A: 0, B: 0, C: 0, D: 0 };
-    for (const b of BLOCOS) out[b] = mediaIgnorandoZeroInicial(dailyByBloco[b]);
+    const fn = incluirZeros ? mediaIncluindoZeros : mediaIgnorandoZeroInicial;
+    for (const b of BLOCOS) out[b] = fn(dailyByBloco[b]);
     return out;
-  }, [dailyByBloco]);
+  }, [dailyByBloco, incluirZeros]);
 
 
   const exportCSV = () => {
