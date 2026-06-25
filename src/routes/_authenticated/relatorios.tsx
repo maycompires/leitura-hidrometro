@@ -5,6 +5,8 @@ import { useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend,
   LineChart, Line, ReferenceLine,
@@ -14,7 +16,7 @@ import { BLOCOS, fetchReadings, type Bloco, type Reading } from "@/lib/api";
 import { analyzeConsumption } from "@/lib/anomalies.functions";
 import { toast } from "sonner";
 import { fmtLeitura, fmtConsumo, fmtM3Total, divisorBloco } from "@/lib/utils";
-import { mediaIgnorandoZeroInicial } from "@/lib/media";
+import { mediaIgnorandoZeroInicial, mediaIncluindoZeros } from "@/lib/media";
 
 export const Route = createFileRoute("/_authenticated/relatorios")({
   component: ReportsPage,
