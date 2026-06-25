@@ -68,7 +68,7 @@ function makeReading(partial: Partial<Reading> & Pick<Reading, "id" | "data_hora
   } as Reading;
 }
 
-const FIXED_NOW = new Date("2026-06-20T12:00:00Z");
+
 
 function buildReadings(): Reading[] {
   return [
