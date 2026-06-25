@@ -96,7 +96,7 @@ describe("ReportsPage — média por bloco (zero inicial vs incluir zeros)", () 
     vi.setSystemTime(FIXED_NOW);
   });
 
-  afterEachCleanup();
+  afterEach(() => cleanup());
 
   it("por padrão ignora a primeira leitura zerada no cálculo da média", () => {
     renderPage();
