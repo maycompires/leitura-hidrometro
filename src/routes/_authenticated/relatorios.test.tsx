@@ -139,8 +139,3 @@ describe("ReportsPage — média por bloco (zero inicial vs incluir zeros)", () 
   });
 });
 
-// helper de cleanup compatível com vitest sem globals
-function afterEachCleanup() {
-  // @ts-expect-error vitest exposes afterEach when globals=false via import
-  import("vitest").then(({ afterEach }) => afterEach(() => cleanup()));
-}
