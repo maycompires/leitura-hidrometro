@@ -91,50 +91,41 @@ function renderPage() {
 }
 
 describe("ReportsPage — média por bloco (zero inicial vs incluir zeros)", () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-    vi.setSystemTime(FIXED_NOW);
-  });
-
   afterEach(() => cleanup());
 
   it("por padrão ignora a primeira leitura zerada no cálculo da média", () => {
     renderPage();
-    const media = screen.getByTestId("media-bloco-A");
-    expect(media.textContent).toBe("2 m³ 000 L");
-  });
-
-  it("ao ativar o toggle, passa a incluir o zero inicial e a média muda", async () => {
-    vi.useRealTimers(); // user-event precisa de timers reais para advance interno
-    vi.setSystemTime(FIXED_NOW);
-    const user = userEvent.setup();
-    renderPage();
-
-    // Estado inicial: ignorando zero
     expect(screen.getByTestId("media-bloco-A").textContent).toBe("2 m³ 000 L");
     expect(
       screen.getByText(/Ignorando zero inicial da média/i),
     ).toBeInTheDocument();
+  });
 
-    // Toggle
-    await user.click(screen.getByTestId("toggle-incluir-zeros"));
+  it("ao ativar o toggle, passa a incluir o zero inicial e a média muda", () => {
+    renderPage();
 
-    // Agora a média deve refletir a inclusão do zero inicial
-    expect(screen.getByTestId("media-bloco-A").textContent).toBe("1 m³ 333 L");
+    // Estado inicial
+    expect(screen.getByTestId("media-bloco-A").textContent).toBe("2 m³ 000 L");
+
+    // Aciona o switch (Radix usa pointer events — usamos fireEvent.click para evitar
+    // dependência de pointer event polyfills em jsdom).
+    fireEvent.click(screen.getByTestId("toggle-incluir-zeros"));
+
     expect(
       screen.getByText(/Incluindo zeros na média/i),
     ).toBeInTheDocument();
+    expect(screen.getByTestId("media-bloco-A").textContent).toBe("1 m³ 333 L");
+
+    // E ao desligar, volta a ignorar
+    fireEvent.click(screen.getByTestId("toggle-incluir-zeros"));
+    expect(screen.getByTestId("media-bloco-A").textContent).toBe("2 m³ 000 L");
   });
 
-  it("blocos sem dados continuam com média zerada nos dois modos", async () => {
-    vi.useRealTimers();
-    vi.setSystemTime(FIXED_NOW);
-    const user = userEvent.setup();
+  it("blocos sem dados continuam com média zerada nos dois modos", () => {
     renderPage();
-
-    // Bloco B não tem leituras na fixture — média = 0 (divisor 100, formato "X m³ YY L").
+    // Bloco B não tem leituras na fixture — divisor 100, formato "X m³ YY L".
     expect(screen.getByTestId("media-bloco-B").textContent).toBe("0 m³ 00 L");
-    await user.click(screen.getByTestId("toggle-incluir-zeros"));
+    fireEvent.click(screen.getByTestId("toggle-incluir-zeros"));
     expect(screen.getByTestId("media-bloco-B").textContent).toBe("0 m³ 00 L");
   });
 });
