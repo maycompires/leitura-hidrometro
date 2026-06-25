@@ -5,6 +5,8 @@ import { useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend,
   LineChart, Line, ReferenceLine,
@@ -14,7 +16,7 @@ import { BLOCOS, fetchReadings, type Bloco, type Reading } from "@/lib/api";
 import { analyzeConsumption } from "@/lib/anomalies.functions";
 import { toast } from "sonner";
 import { fmtLeitura, fmtConsumo, fmtM3Total, divisorBloco } from "@/lib/utils";
-import { mediaIgnorandoZeroInicial } from "@/lib/media";
+import { mediaIgnorandoZeroInicial, mediaIncluindoZeros } from "@/lib/media";
 
 export const Route = createFileRoute("/_authenticated/relatorios")({
   component: ReportsPage,
@@ -38,10 +40,11 @@ function groupKey(d: Date, p: Period) {
   return d.toLocaleDateString("pt-BR", { month: "short" });
 }
 
-function ReportsPage() {
+export function ReportsPage() {
   const [period, setPeriod] = useState<Period>("month");
   const [analysis, setAnalysis] = useState<string>("");
   const [analyzing, setAnalyzing] = useState(false);
+  const [incluirZeros, setIncluirZeros] = useState(false);
   const runAnalysis = useServerFn(analyzeConsumption);
   const { data: readings = [] } = useQuery({ queryKey: ["readings"], queryFn: () => fetchReadings() });
 
@@ -109,12 +112,13 @@ function ReportsPage() {
     return out;
   }, [byBlocoSorted]);
 
-  // Média de consumo diário por bloco (ignora a primeira leitura — consumo inicial zero)
+  // Média de consumo diário por bloco — alterna entre ignorar a primeira leitura (consumo inicial zero) ou incluir todos os dias.
   const mediaByBloco = useMemo(() => {
     const out: Record<Bloco, number> = { A: 0, B: 0, C: 0, D: 0 };
-    for (const b of BLOCOS) out[b] = mediaIgnorandoZeroInicial(dailyByBloco[b]);
+    const fn = incluirZeros ? mediaIncluindoZeros : mediaIgnorandoZeroInicial;
+    for (const b of BLOCOS) out[b] = fn(dailyByBloco[b]);
     return out;
-  }, [dailyByBloco]);
+  }, [dailyByBloco, incluirZeros]);
 
 
   const exportCSV = () => {
@@ -260,12 +264,32 @@ ${blocosHtml}
         </TabsList>
       </Tabs>
 
+      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <Switch
+          id="incluir-zeros"
+          checked={incluirZeros}
+          onCheckedChange={setIncluirZeros}
+          data-testid="toggle-incluir-zeros"
+        />
+        <Label htmlFor="incluir-zeros" className="cursor-pointer">
+          {incluirZeros ? "Incluindo zeros na média" : "Ignorando zero inicial da média"}
+        </Label>
+      </div>
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {BLOCOS.map((b) => (
           <Card key={b} className="p-4 shadow-soft">
             <p className="text-xs text-muted-foreground">Bloco {b}</p>
             <p className="text-xl font-semibold tabular-nums mt-1">{fmtConsumo(totals.byBloco[b], b)}</p>
-            <p className="text-[11px] text-muted-foreground mt-1">Média/dia: <span className="tabular-nums font-medium text-foreground/80">{fmtConsumo(mediaByBloco[b], b)}</span></p>
+            <p className="text-[11px] text-muted-foreground mt-1">
+              Média/dia:{" "}
+              <span
+                className="tabular-nums font-medium text-foreground/80"
+                data-testid={`media-bloco-${b}`}
+              >
+                {fmtConsumo(mediaByBloco[b], b)}
+              </span>
+            </p>
           </Card>
         ))}
       </div>
