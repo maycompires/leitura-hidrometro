@@ -11,7 +11,8 @@ import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend,
   LineChart, Line, ReferenceLine,
 } from "recharts";
-import { Download, Sparkles, Loader2, AlertTriangle } from "lucide-react";
+import { Download, Sparkles, Loader2 } from "lucide-react";
+import { AnalysisReport } from "@/components/AnalysisReport";
 import { BLOCOS, fetchReadings, type Bloco, type Reading } from "@/lib/api";
 import { analyzeConsumption } from "@/lib/anomalies.functions";
 import { toast } from "sonner";
