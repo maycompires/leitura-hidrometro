@@ -335,9 +335,8 @@ ${blocosHtml}
           </p>
         )}
         {analysis && (
-          <div className="mt-4 text-sm leading-relaxed whitespace-pre-wrap text-foreground/90 flex gap-2">
-            <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
-            <div className="flex-1">{analysis}</div>
+          <div className="mt-4">
+            <AnalysisReport markdown={analysis} />
           </div>
         )}
       </Card>
