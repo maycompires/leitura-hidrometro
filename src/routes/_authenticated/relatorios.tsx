@@ -166,13 +166,23 @@ export function ReportsPage() {
     const chartEvol = captureChartSvg("geral-line");
     const chartsBloco = BLOCOS.map((b) => ({ b, svg: captureChartSvg(`bloco-${b}`) }));
 
+    const overviewCharts = [
+      { title: "Consumo por bloco", svg: chartGeral },
+      { title: "Evolução do consumo", svg: chartEvol },
+      ...chartsBloco.map((c) => ({ title: `Bloco ${c.b} — consumo diário`, svg: c.svg })),
+    ].filter((c) => c.svg);
+
+    const chartsGridHtml = `<div class="charts-grid">${overviewCharts
+      .map(
+        (c) => `<div class="chart-cell"><h3>${c.title}</h3><div class="chart">${c.svg}</div></div>`,
+      )
+      .join("")}</div>`;
+
     const blocosHtml = BLOCOS.map((b) => {
-      const chart = chartsBloco.find((c) => c.b === b)?.svg ?? "";
       return `
 <section class="bloco">
   <h2>Bloco ${b}</h2>
   <p class="meta">Total: <strong>${fmtConsumo(totals.byBloco[b], b)}</strong> · ${byBlocoSorted[b].length} leitura(s)</p>
-  ${chart ? `<div class="chart">${chart}</div>` : ""}
   ${byBlocoSorted[b].length === 0
     ? `<p class="empty">Sem leituras no período.</p>`
     : `<table><thead><tr><th>Data</th><th>Atual</th><th>Anterior</th><th>Consumo</th></tr></thead><tbody>
@@ -186,7 +196,7 @@ ${byBlocoSorted[b].map((r) => `<tr><td>${new Date(r.data_hora).toLocaleString("p
 body{font-family:system-ui,sans-serif;padding:32px;color:#1e293b}
 h1{color:#0369a1;margin:0 0 4px}
 h2{color:#0369a1;margin:0 0 8px;font-size:18px}
-h3{color:#0369a1;margin:24px 0 8px;font-size:15px}
+h3{color:#0369a1;margin:0 0 6px;font-size:13px;text-align:center}
 .meta{color:#64748b;font-size:13px;margin:0 0 12px}
 .empty{color:#94a3b8;font-style:italic}
 table{width:100%;border-collapse:collapse;margin-top:8px}
@@ -195,9 +205,10 @@ th{background:#f1f5f9}
 .bloco{margin-top:24px;page-break-inside:avoid}
 .bloco + .bloco{page-break-before:always}
 .summary{margin-top:16px}
-.chart{margin:8px 0 12px;page-break-inside:avoid}
-.chart svg{max-width:100%;height:auto}
-.charts-overview{page-break-after:always}
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;page-break-after:always}
+.chart-cell{border:1px solid #e2e8f0;border-radius:8px;padding:8px;page-break-inside:avoid}
+.chart{width:100%}
+.chart svg{max-width:100%;height:auto;max-height:180px}
 </style></head><body>
 <h1>Condomínio Terra do Sol — Relatório de Consumo</h1>
 <p class="meta">Período: ${period} · Gerado em ${new Date().toLocaleString("pt-BR")}</p>
@@ -205,12 +216,10 @@ th{background:#f1f5f9}
   <table><thead><tr>${BLOCOS.map((b) => `<th>Bloco ${b}</th>`).join("")}<th>Total Geral</th></tr></thead>
   <tbody><tr>${BLOCOS.map((b) => `<td>${fmtConsumo(totals.byBloco[b], b)}</td>`).join("")}<td><strong>${fmtM3Total(totals.total)}</strong></td></tr></tbody></table>
 </div>
-<div class="charts-overview">
-  ${chartGeral ? `<h3>Consumo por bloco</h3><div class="chart">${chartGeral}</div>` : ""}
-  ${chartEvol ? `<h3>Evolução do consumo</h3><div class="chart">${chartEvol}</div>` : ""}
-</div>
+${chartsGridHtml}
 ${blocosHtml}
 </body></html>`;
+
     const w = window.open("", "_blank");
     if (!w) return toast.error("Permita pop-ups");
     w.document.write(html);
