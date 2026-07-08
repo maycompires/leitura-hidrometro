@@ -11,7 +11,8 @@ import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend,
   LineChart, Line, ReferenceLine,
 } from "recharts";
-import { Download, Sparkles, Loader2, AlertTriangle } from "lucide-react";
+import { Download, Sparkles, Loader2 } from "lucide-react";
+import { AnalysisReport } from "@/components/AnalysisReport";
 import { BLOCOS, fetchReadings, type Bloco, type Reading } from "@/lib/api";
 import { analyzeConsumption } from "@/lib/anomalies.functions";
 import { toast } from "sonner";
@@ -334,9 +335,8 @@ ${blocosHtml}
           </p>
         )}
         {analysis && (
-          <div className="mt-4 text-sm leading-relaxed whitespace-pre-wrap text-foreground/90 flex gap-2">
-            <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
-            <div className="flex-1">{analysis}</div>
+          <div className="mt-4">
+            <AnalysisReport markdown={analysis} />
           </div>
         )}
       </Card>
