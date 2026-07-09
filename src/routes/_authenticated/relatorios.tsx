@@ -121,6 +121,18 @@ export function ReportsPage() {
     return out;
   }, [dailyByBloco, incluirZeros]);
 
+  // Consumo diário total — soma dos 4 blocos por dia
+  const dailyTotalData = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const b of BLOCOS) {
+      for (const { label, consumo } of dailyByBloco[b]) {
+        map.set(label, (map.get(label) ?? 0) + consumo);
+      }
+    }
+    const entries = [...map.entries()].sort(([a], [c]) => a.localeCompare(c));
+    return entries.map(([label, consumo]) => ({ label, consumo: Number(consumo.toFixed(3)) }));
+  }, [dailyByBloco]);
+
 
   const exportCSV = () => {
     const lines: string[][] = [];
