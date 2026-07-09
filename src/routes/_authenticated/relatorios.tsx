@@ -121,6 +121,18 @@ export function ReportsPage() {
     return out;
   }, [dailyByBloco, incluirZeros]);
 
+  // Consumo diário total — soma dos 4 blocos por dia
+  const dailyTotalData = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const b of BLOCOS) {
+      for (const { label, consumo } of dailyByBloco[b]) {
+        map.set(label, (map.get(label) ?? 0) + consumo);
+      }
+    }
+    const entries = [...map.entries()].sort(([a], [c]) => a.localeCompare(c));
+    return entries.map(([label, consumo]) => ({ label, consumo: Number(consumo.toFixed(3)) }));
+  }, [dailyByBloco]);
+
 
   const exportCSV = () => {
     const lines: string[][] = [];
@@ -163,12 +175,12 @@ export function ReportsPage() {
   };
 
   const exportPDF = () => {
-    const chartGeral = captureChartSvg("geral-bar");
+    const chartGeral = captureChartSvg("geral-daily");
     const chartEvol = captureChartSvg("geral-line");
     const chartsBloco = BLOCOS.map((b) => ({ b, svg: captureChartSvg(`bloco-${b}`) }));
 
     const overviewCharts = [
-      { title: "Consumo por bloco", svg: chartGeral },
+      { title: "Consumo diário total", svg: chartGeral },
       { title: "Evolução do consumo", svg: chartEvol },
       ...chartsBloco.map((c) => ({ title: `Bloco ${c.b} — consumo diário`, svg: c.svg })),
     ].filter((c) => c.svg);
@@ -343,16 +355,16 @@ ${blocosHtml}
 
 
       <Card className="p-4 shadow-soft">
-        <h2 className="text-sm font-medium mb-3">Consumo por bloco</h2>
-        <div className="h-72 w-full" data-chart="geral-bar">
-
+        <h2 className="text-sm font-medium mb-3">Consumo diário total</h2>
+        <div className="h-72 w-full" data-chart="geral-daily">
           <ResponsiveContainer>
-            <BarChart data={chartData}>
+            <BarChart data={dailyTotalData}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
               <XAxis dataKey="label" stroke="var(--color-muted-foreground)" fontSize={12} />
               <YAxis stroke="var(--color-muted-foreground)" fontSize={12} />
               <Tooltip
                 cursor={{ fill: 'transparent' }}
+                formatter={(v: number) => [fmtM3Total(Number(v)), "Consumo total"]}
                 contentStyle={{
                   backgroundColor: "var(--popover)",
                   border: "1px solid var(--border)",
@@ -360,11 +372,7 @@ ${blocosHtml}
                   color: "var(--popover-foreground)",
                 }}
               />
-              <Legend />
-              <Bar dataKey="A" fill="#0EA5E9" radius={[4,4,0,0]} />
-              <Bar dataKey="B" fill="#10B981" radius={[4,4,0,0]} />
-              <Bar dataKey="C" fill="#F59E0B" radius={[4,4,0,0]} />
-              <Bar dataKey="D" fill="#EF4444" radius={[4,4,0,0]} />
+              <Bar dataKey="consumo" fill="#0EA5E9" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
