@@ -373,7 +373,7 @@ ${blocosHtml}
 
 
       <Card className="p-4 shadow-soft">
-        <h2 className="text-sm font-medium mb-3">Consumo diário total</h2>
+        <h2 className="text-sm font-medium mb-3">Consumo diário total — {currentMonthLabel}</h2>
         <div className="h-72 w-full" data-chart="geral-daily">
           <ResponsiveContainer>
             <BarChart data={dailyTotalData}>
