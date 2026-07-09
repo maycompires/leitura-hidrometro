@@ -121,17 +121,35 @@ export function ReportsPage() {
     return out;
   }, [dailyByBloco, incluirZeros]);
 
-  // Consumo diário total — soma dos 4 blocos por dia
+  const currentMonthLabel = useMemo(() => {
+    return new Date().toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+  }, []);
+
+  // Consumo diário total do mês atual (dia 01 até hoje), observando todas as leituras.
   const dailyTotalData = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const b of BLOCOS) {
-      for (const { label, consumo } of dailyByBloco[b]) {
-        map.set(label, (map.get(label) ?? 0) + consumo);
-      }
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const today = now.getDate();
+
+    const byDay = new Map<string, number>();
+    for (const r of readings) {
+      const key = new Date(r.data_hora).toISOString().slice(0, 10);
+      byDay.set(key, (byDay.get(key) ?? 0) + Number(r.consumo_m3));
     }
-    const entries = [...map.entries()].sort(([a], [c]) => a.localeCompare(c));
-    return entries.map(([label, consumo]) => ({ label, consumo: Number(consumo.toFixed(3)) }));
-  }, [dailyByBloco]);
+
+    const data: { label: string; consumo: number }[] = [];
+    for (let day = 1; day <= today; day++) {
+      const d = new Date(year, month, day);
+      const key = d.toISOString().slice(0, 10);
+      const consumo = byDay.get(key) ?? 0;
+      data.push({
+        label: `${String(day).padStart(2, "0")}/${String(month + 1).padStart(2, "0")}`,
+        consumo: Number(consumo.toFixed(3)),
+      });
+    }
+    return data;
+  }, [readings]);
 
 
   const exportCSV = () => {
