@@ -315,14 +315,37 @@ ${blocosHtml}
         </div>
       </div>
 
-      <Tabs value={period} onValueChange={(v) => setPeriod(v as Period)}>
-        <TabsList>
-          <TabsTrigger value="day">Hoje</TabsTrigger>
-          <TabsTrigger value="week">Semana</TabsTrigger>
-          <TabsTrigger value="month">Mês</TabsTrigger>
-          <TabsTrigger value="year">Ano</TabsTrigger>
-        </TabsList>
-      </Tabs>
+      <div className="flex items-center gap-3 flex-wrap">
+        <Tabs value={period} onValueChange={(v) => setPeriod(v as Period)}>
+          <TabsList>
+            <TabsTrigger value="day">Hoje</TabsTrigger>
+            <TabsTrigger value="week">Semana</TabsTrigger>
+            <TabsTrigger value="month">Mês</TabsTrigger>
+            <TabsTrigger value="year">Ano</TabsTrigger>
+          </TabsList>
+        </Tabs>
+        <Select
+          value={selectedMonth}
+          onValueChange={setSelectedMonth}
+          disabled={period === "year"}
+        >
+          <SelectTrigger className="w-[200px]" data-testid="select-mes">
+            <SelectValue placeholder="Selecione o mês" />
+          </SelectTrigger>
+          <SelectContent>
+            {availableMonths.map((m) => (
+              <SelectItem key={m} value={m} className="capitalize">
+                {monthLabel(m)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {period === "year" && (
+          <span className="text-xs text-muted-foreground">
+            Exibindo todos os meses
+          </span>
+        )}
+      </div>
 
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <Switch
