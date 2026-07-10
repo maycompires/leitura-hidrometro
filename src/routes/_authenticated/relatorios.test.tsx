@@ -90,7 +90,17 @@ function renderPage() {
 }
 
 describe("ReportsPage — média por bloco (zero inicial vs incluir zeros)", () => {
-  afterEach(() => cleanup());
+  beforeEach(() => {
+    // Congela o "hoje" em junho/2026 para que o filtro de mês selecionado
+    // por padrão inclua as leituras da fixture (15–17/06/2026).
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-06-17T15:00:00Z"));
+  });
+  afterEach(() => {
+    cleanup();
+    vi.useRealTimers();
+  });
+  afterAll(() => vi.useRealTimers());
 
   it("por padrão ignora a primeira leitura zerada no cálculo da média", () => {
     renderPage();
