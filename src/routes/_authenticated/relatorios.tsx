@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend,
@@ -25,14 +26,13 @@ export const Route = createFileRoute("/_authenticated/relatorios")({
 
 type Period = "day" | "week" | "month" | "year";
 
-function periodStart(p: Period) {
-  const now = new Date();
-  const d = new Date(now);
-  if (p === "day") d.setHours(0, 0, 0, 0);
-  else if (p === "week") d.setDate(now.getDate() - 7);
-  else if (p === "month") d.setMonth(now.getMonth() - 1);
-  else d.setFullYear(now.getFullYear() - 1);
-  return d;
+function monthKey(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function monthLabel(key: string) {
+  const [y, m] = key.split("-").map(Number);
+  return new Date(y, m - 1, 1).toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
 }
 
 function groupKey(d: Date, p: Period) {
@@ -46,13 +46,46 @@ export function ReportsPage() {
   const [analysis, setAnalysis] = useState<string>("");
   const [analyzing, setAnalyzing] = useState(false);
   const [incluirZeros, setIncluirZeros] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState<string>(() => monthKey(new Date()));
   const runAnalysis = useServerFn(analyzeConsumption);
   const { data: readings = [] } = useQuery({ queryKey: ["readings"], queryFn: () => fetchReadings() });
 
+  // Meses disponíveis: do primeiro mês com leitura até o mês atual.
+  const availableMonths = useMemo(() => {
+    const set = new Set<string>();
+    for (const r of readings) set.add(monthKey(new Date(r.data_hora)));
+    set.add(monthKey(new Date()));
+    return [...set].sort((a, b) => b.localeCompare(a));
+  }, [readings]);
+
   const filtered = useMemo(() => {
-    const start = periodStart(period);
-    return readings.filter((r) => new Date(r.data_hora) >= start);
-  }, [readings, period]);
+    // Ano: todas as leituras (ignora o mês selecionado).
+    if (period === "year") return readings;
+
+    // Restringe ao mês selecionado.
+    const [y, m] = selectedMonth.split("-").map(Number);
+    const monthStart = new Date(y, m - 1, 1, 0, 0, 0, 0);
+    const monthEnd = new Date(y, m, 1, 0, 0, 0, 0);
+    const inMonth = readings.filter((r) => {
+      const d = new Date(r.data_hora);
+      return d >= monthStart && d < monthEnd;
+    });
+
+    if (period === "month") return inMonth;
+
+    // Referência = hoje se estiver no mês selecionado, senão último dia do mês.
+    const now = new Date();
+    const ref = now >= monthStart && now < monthEnd ? now : new Date(y, m, 0, 23, 59, 59, 999);
+
+    if (period === "day") {
+      const dayStart = new Date(ref.getFullYear(), ref.getMonth(), ref.getDate(), 0, 0, 0, 0);
+      return inMonth.filter((r) => new Date(r.data_hora) >= dayStart);
+    }
+    // semana: últimos 7 dias a partir da referência, dentro do mês.
+    const weekStart = new Date(ref);
+    weekStart.setDate(ref.getDate() - 7);
+    return inMonth.filter((r) => new Date(r.data_hora) >= weekStart);
+  }, [readings, period, selectedMonth]);
 
   const chartData = useMemo(() => {
     const buckets: Record<string, Record<Bloco, number> & { label: string; sortKey: number }> = {} as any;
@@ -282,14 +315,37 @@ ${blocosHtml}
         </div>
       </div>
 
-      <Tabs value={period} onValueChange={(v) => setPeriod(v as Period)}>
-        <TabsList>
-          <TabsTrigger value="day">Hoje</TabsTrigger>
-          <TabsTrigger value="week">Semana</TabsTrigger>
-          <TabsTrigger value="month">Mês</TabsTrigger>
-          <TabsTrigger value="year">Ano</TabsTrigger>
-        </TabsList>
-      </Tabs>
+      <div className="flex items-center gap-3 flex-wrap">
+        <Tabs value={period} onValueChange={(v) => setPeriod(v as Period)}>
+          <TabsList>
+            <TabsTrigger value="day">Hoje</TabsTrigger>
+            <TabsTrigger value="week">Semana</TabsTrigger>
+            <TabsTrigger value="month">Mês</TabsTrigger>
+            <TabsTrigger value="year">Ano</TabsTrigger>
+          </TabsList>
+        </Tabs>
+        <Select
+          value={selectedMonth}
+          onValueChange={setSelectedMonth}
+          disabled={period === "year"}
+        >
+          <SelectTrigger className="w-[200px]" data-testid="select-mes">
+            <SelectValue placeholder="Selecione o mês" />
+          </SelectTrigger>
+          <SelectContent>
+            {availableMonths.map((m) => (
+              <SelectItem key={m} value={m} className="capitalize">
+                {monthLabel(m)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {period === "year" && (
+          <span className="text-xs text-muted-foreground">
+            Exibindo todos os meses
+          </span>
+        )}
+      </div>
 
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <Switch
