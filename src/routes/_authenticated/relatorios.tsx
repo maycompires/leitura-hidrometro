@@ -121,34 +121,21 @@ export function ReportsPage() {
     return out;
   }, [dailyByBloco, incluirZeros]);
 
-  const currentMonthLabel = useMemo(() => {
-    return new Date().toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
-  }, []);
-
-  // Consumo diário total do mês atual (dia 01 até hoje), observando todas as leituras.
+  // Consumo diário total desde o início (todas as leituras).
   const dailyTotalData = useMemo(() => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth();
-    const today = now.getDate();
-
     const byDay = new Map<string, number>();
     for (const r of readings) {
       const key = new Date(r.data_hora).toISOString().slice(0, 10);
       byDay.set(key, (byDay.get(key) ?? 0) + Number(r.consumo_m3));
     }
-
-    const data: { label: string; consumo: number }[] = [];
-    for (let day = 1; day <= today; day++) {
-      const d = new Date(year, month, day);
-      const key = d.toISOString().slice(0, 10);
-      const consumo = byDay.get(key) ?? 0;
-      data.push({
-        label: `${String(day).padStart(2, "0")}/${String(month + 1).padStart(2, "0")}`,
+    const sorted = [...byDay.entries()].sort(([a], [c]) => a.localeCompare(c));
+    return sorted.map(([day, consumo]) => {
+      const [y, m, dd] = day.split("-");
+      return {
+        label: `${dd}/${m}/${y.slice(2)}`,
         consumo: Number(consumo.toFixed(3)),
-      });
-    }
-    return data;
+      };
+    });
   }, [readings]);
 
 
