@@ -154,10 +154,11 @@ export function ReportsPage() {
     return out;
   }, [dailyByBloco, incluirZeros]);
 
-  // Consumo diário total desde o início (todas as leituras).
+  // Consumo diário total — respeita o período selecionado (ano = histórico completo).
   const dailyTotalData = useMemo(() => {
+    const source = period === "year" ? readings : filtered;
     const byDay = new Map<string, number>();
-    for (const r of readings) {
+    for (const r of source) {
       const key = new Date(r.data_hora).toISOString().slice(0, 10);
       byDay.set(key, (byDay.get(key) ?? 0) + Number(r.consumo_m3));
     }
@@ -165,11 +166,11 @@ export function ReportsPage() {
     return sorted.map(([day, consumo]) => {
       const [y, m, dd] = day.split("-");
       return {
-        label: `${dd}/${m}/${y.slice(2)}`,
+        label: period === "year" ? `${dd}/${m}/${y.slice(2)}` : `${dd}/${m}`,
         consumo: Number(consumo.toFixed(3)),
       };
     });
-  }, [readings]);
+  }, [readings, filtered, period]);
 
 
   const exportCSV = () => {
@@ -416,7 +417,7 @@ ${blocosHtml}
 
 
       <Card className="p-4 shadow-soft">
-        <h2 className="text-sm font-medium mb-3">Consumo diário total — histórico completo</h2>
+        <h2 className="text-sm font-medium mb-3">Consumo diário total {period === "year" ? "— histórico completo" : `— ${monthLabel(selectedMonth)}`}</h2>
         <div className="h-72 w-full" data-chart="geral-daily">
           <ResponsiveContainer>
             <BarChart data={dailyTotalData}>
