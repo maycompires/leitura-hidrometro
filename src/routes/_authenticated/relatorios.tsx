@@ -361,22 +361,30 @@ ${blocosHtml}
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {BLOCOS.map((b) => (
-          <Card key={b} className="p-4 shadow-soft">
-            <p className="text-xs text-muted-foreground">Bloco {b}</p>
-            <p className="text-xl font-semibold tabular-nums mt-1">{fmtConsumo(totals.byBloco[b], b)}</p>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              Média/dia:{" "}
-              <span
-                className="tabular-nums font-medium text-foreground/80"
-                data-testid={`media-bloco-${b}`}
-              >
-                {fmtConsumo(mediaByBloco[b], b)}
-              </span>
-            </p>
-          </Card>
-        ))}
+        {BLOCOS.map((b) => {
+          const grad = { A: "bg-gradient-bloco-a border-bloco-a", B: "bg-gradient-bloco-b border-bloco-b", C: "bg-gradient-bloco-c border-bloco-c", D: "bg-gradient-bloco-d border-bloco-d" }[b];
+          const dot = { A: "bg-bloco-a", B: "bg-bloco-b", C: "bg-bloco-c", D: "bg-bloco-d" }[b];
+          return (
+            <Card key={b} className={`p-4 shadow-soft ${grad}`}>
+              <div className="flex items-center gap-2">
+                <span className={`h-2.5 w-2.5 rounded-full ${dot}`} aria-hidden />
+                <p className="text-xs text-muted-foreground">Bloco {b}</p>
+              </div>
+              <p className="text-xl font-semibold tabular-nums mt-1">{fmtConsumo(totals.byBloco[b], b)}</p>
+              <p className="text-[11px] text-muted-foreground mt-1">
+                Média/dia:{" "}
+                <span
+                  className="tabular-nums font-medium text-foreground/80"
+                  data-testid={`media-bloco-${b}`}
+                >
+                  {fmtConsumo(mediaByBloco[b], b)}
+                </span>
+              </p>
+            </Card>
+          );
+        })}
       </div>
+
 
       <div className="grid grid-cols-2 gap-3">
         <Card className="p-4 shadow-soft">

@@ -77,11 +77,24 @@ function BlockCard({
   const trendColor =
     trend === "up" ? "text-warning" : trend === "down" ? "text-success" : "text-muted-foreground";
 
+  const gradClass = {
+    A: "bg-gradient-bloco-a border-bloco-a",
+    B: "bg-gradient-bloco-b border-bloco-b",
+    C: "bg-gradient-bloco-c border-bloco-c",
+    D: "bg-gradient-bloco-d border-bloco-d",
+  }[bloco];
+  const accentClass = {
+    A: "bg-bloco-a",
+    B: "bg-bloco-b",
+    C: "bg-bloco-c",
+    D: "bg-bloco-d",
+  }[bloco];
+
   return (
-    <Card className="bg-gradient-card border-border/60 shadow-soft p-5 transition-all hover:shadow-elevated hover:-translate-y-0.5">
+    <Card className={cn(gradClass, "shadow-soft p-5 transition-all hover:shadow-elevated hover:-translate-y-0.5")}>
       <div className="flex items-start justify-between">
         <div>
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-soft text-primary">
+          <div className={cn("flex h-10 w-10 items-center justify-center rounded-xl shadow-soft", accentClass)}>
             <Droplet className="h-5 w-5" />
           </div>
           <h3 className="mt-3 text-xl font-semibold">Bloco {bloco}</h3>
@@ -91,6 +104,7 @@ function BlockCard({
           {trend === "up" ? "Subindo" : trend === "down" ? "Caindo" : "Estável"}
         </div>
       </div>
+
 
       <div className="mt-4 space-y-1">
         {loading ? (
