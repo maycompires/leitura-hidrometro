@@ -37,7 +37,7 @@ d("alerts — trigger de proteção de campos sensíveis", () => {
        RETURNING id;`,
     );
     expect(r.status).toBe(0);
-    alertId = r.stdout.trim();
+    alertId = r.stdout.split("\n")[0].trim();
     expect(alertId).toMatch(/^[0-9a-f-]{36}$/);
   });
 
