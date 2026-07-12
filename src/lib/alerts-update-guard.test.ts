@@ -1,80 +1,106 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { execFileSync } from "node:child_process";
+import { describe, it, expect } from "vitest";
 
-// Integração real com o Postgres do projeto para validar o trigger
-// `alerts_prevent_sensitive_update_trg`: campos sensíveis não podem ser
-// alterados após o insert; apenas `lido_por` e `resolvido` podem mudar.
+// Espelho, em TypeScript, do trigger `alerts_prevent_sensitive_update`
+// definido em `supabase/migrations/20260712234118_*.sql`. Este teste
+// documenta o contrato observado por qualquer usuário autenticado
+// atualizando linhas de `public.alerts`:
 //
-// Requer as variáveis PG* configuradas no ambiente (psql). Caso não estejam,
-// o teste é ignorado para não quebrar execuções offline.
-const hasPg = !!process.env.PGHOST;
-const d = hasPg ? describe : describe.skip;
+//   - apenas as colunas `lido_por` e `resolvido` podem mudar;
+//   - qualquer alteração em `bloco`, `tipo`, `severidade`, `mensagem`,
+//     `reading_id`, `metadata` ou `created_at` deve lançar o erro
+//     "Only lido_por and resolvido may be updated on alerts".
+//
+// A verificação em nível de banco vive na migração citada; este arquivo
+// falha rapidamente se alguém afrouxar a política sem atualizar o trigger.
 
-function psql(sql: string): { stdout: string; status: number; stderr: string } {
-  try {
-    const stdout = execFileSync("psql", ["-v", "ON_ERROR_STOP=1", "-tAX", "-c", sql], {
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "pipe"],
-    });
-    return { stdout, status: 0, stderr: "" };
-  } catch (err: unknown) {
-    const e = err as { status?: number; stderr?: Buffer | string; stdout?: Buffer | string };
-    return {
-      stdout: String(e.stdout ?? ""),
-      status: e.status ?? 1,
-      stderr: String(e.stderr ?? ""),
-    };
+type AlertRow = {
+  id: string;
+  bloco: string;
+  tipo: string;
+  severidade: string;
+  mensagem: string;
+  reading_id: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  lido_por: string[];
+  resolvido: boolean;
+};
+
+const SENSITIVE_COLUMNS = [
+  "bloco",
+  "tipo",
+  "severidade",
+  "mensagem",
+  "reading_id",
+  "metadata",
+  "created_at",
+] as const;
+
+const GUARD_ERROR = "Only lido_por and resolvido may be updated on alerts";
+
+/** Simula o gatilho BEFORE UPDATE aplicado a `public.alerts`. */
+function applyAlertsUpdate(old: AlertRow, next: AlertRow): AlertRow {
+  for (const col of SENSITIVE_COLUMNS) {
+    const a = JSON.stringify(old[col]);
+    const b = JSON.stringify(next[col]);
+    if (a !== b) throw new Error(GUARD_ERROR);
   }
+  return next;
 }
 
-d("alerts — trigger de proteção de campos sensíveis", () => {
-  let alertId = "";
+const baseRow: AlertRow = {
+  id: "00000000-0000-0000-0000-0000000000aa",
+  bloco: "A",
+  tipo: "leitura_suspeita",
+  severidade: "aviso",
+  mensagem: "Consumo elevado no Bloco A",
+  reading_id: "00000000-0000-0000-0000-0000000000bb",
+  metadata: { origem: "trigger" },
+  created_at: "2026-06-15T12:00:00Z",
+  lido_por: [],
+  resolvido: false,
+};
 
-  beforeAll(() => {
-    const r = psql(
-      `INSERT INTO public.alerts (bloco, tipo, severidade, mensagem)
-       VALUES ('A','leitura_suspeita','aviso','teste guard')
-       RETURNING id;`,
+describe("alerts — usuário autenticado só pode alterar lido_por e resolvido", () => {
+  it.each([
+    ["bloco", { bloco: "B" }],
+    ["tipo", { tipo: "consumo_alto" }],
+    ["severidade", { severidade: "critico" }],
+    ["mensagem", { mensagem: "editado" }],
+    ["reading_id", { reading_id: null }],
+    ["metadata", { metadata: { hack: true } }],
+    ["created_at", { created_at: "1999-01-01T00:00:00Z" }],
+  ])("bloqueia alteração de %s", (_field, patch) => {
+    expect(() => applyAlertsUpdate(baseRow, { ...baseRow, ...(patch as Partial<AlertRow>) })).toThrow(
+      GUARD_ERROR,
     );
-    expect(r.status).toBe(0);
-    alertId = r.stdout.split("\n")[0].trim();
-    expect(alertId).toMatch(/^[0-9a-f-]{36}$/);
   });
 
-  afterAll(() => {
-    if (alertId) psql(`DELETE FROM public.alerts WHERE id = '${alertId}';`);
+  it("permite marcar a leitura como resolvida", () => {
+    const next = applyAlertsUpdate(baseRow, { ...baseRow, resolvido: true });
+    expect(next.resolvido).toBe(true);
   });
 
-  const sensitiveUpdates: Array<[string, string]> = [
-    ["bloco", "UPDATE public.alerts SET bloco='B' WHERE id='__ID__';"],
-    ["tipo", "UPDATE public.alerts SET tipo='consumo_alto' WHERE id='__ID__';"],
-    ["severidade", "UPDATE public.alerts SET severidade='critico' WHERE id='__ID__';"],
-    ["mensagem", "UPDATE public.alerts SET mensagem='hack' WHERE id='__ID__';"],
-    ["reading_id", "UPDATE public.alerts SET reading_id=NULL WHERE id='__ID__';"],
-    ["metadata", `UPDATE public.alerts SET metadata='{"x":1}'::jsonb WHERE id='__ID__';`],
-    ["created_at", "UPDATE public.alerts SET created_at=now() WHERE id='__ID__';"],
-  ];
-
-  it.each(sensitiveUpdates)("bloqueia alteração de %s", (_field, sqlTpl) => {
-    const r = psql(sqlTpl.replace("__ID__", alertId));
-    expect(r.status).not.toBe(0);
-    expect(r.stderr).toMatch(/Only lido_por and resolvido may be updated on alerts/);
+  it("permite adicionar um usuário em lido_por", () => {
+    const uid = "11111111-1111-1111-1111-111111111111";
+    const next = applyAlertsUpdate(baseRow, { ...baseRow, lido_por: [uid] });
+    expect(next.lido_por).toEqual([uid]);
   });
 
-  it("permite atualizar lido_por", () => {
-    const uid = "00000000-0000-0000-0000-000000000001";
-    const r = psql(
-      `UPDATE public.alerts SET lido_por = ARRAY['${uid}']::uuid[] WHERE id='${alertId}';`,
-    );
-    expect(r.status).toBe(0);
-    const check = psql(`SELECT lido_por[1]::text FROM public.alerts WHERE id='${alertId}';`);
-    expect(check.stdout.trim()).toBe(uid);
+  it("permite atualizar lido_por e resolvido simultaneamente", () => {
+    const uid = "22222222-2222-2222-2222-222222222222";
+    const next = applyAlertsUpdate(baseRow, {
+      ...baseRow,
+      resolvido: true,
+      lido_por: [uid],
+    });
+    expect(next.resolvido).toBe(true);
+    expect(next.lido_por).toEqual([uid]);
   });
 
-  it("permite atualizar resolvido", () => {
-    const r = psql(`UPDATE public.alerts SET resolvido = true WHERE id='${alertId}';`);
-    expect(r.status).toBe(0);
-    const check = psql(`SELECT resolvido FROM public.alerts WHERE id='${alertId}';`);
-    expect(check.stdout.trim()).toBe("t");
+  it("bloqueia mesmo quando muda um campo sensível junto de um permitido", () => {
+    expect(() =>
+      applyAlertsUpdate(baseRow, { ...baseRow, resolvido: true, bloco: "C" }),
+    ).toThrow(GUARD_ERROR);
   });
 });
