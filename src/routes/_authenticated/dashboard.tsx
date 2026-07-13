@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import type { CSSProperties } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Droplet, TrendingUp, TrendingDown, Minus, ArrowRight, Plus } from "lucide-react";
@@ -7,6 +8,7 @@ import { BLOCOS, fetchReadings, type Bloco, type Reading } from "@/lib/api";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn, fmtLeitura, fmtConsumo, fmtM3Total } from "@/lib/utils";
+
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
@@ -89,11 +91,30 @@ function BlockCard({
     C: "bg-bloco-c",
     D: "bg-bloco-d",
   }[bloco];
+  const waveColor = {
+    A: "rgba(14, 165, 233, 0.38)",
+    B: "rgba(16, 185, 129, 0.38)",
+    C: "rgba(245, 158, 11, 0.4)",
+    D: "rgba(239, 68, 68, 0.38)",
+  }[bloco];
+  const waveColor2 = {
+    A: "rgba(14, 165, 233, 0.22)",
+    B: "rgba(16, 185, 129, 0.22)",
+    C: "rgba(245, 158, 11, 0.24)",
+    D: "rgba(239, 68, 68, 0.22)",
+  }[bloco];
 
   return (
-    <Card className={cn(gradClass, "shadow-soft p-5 transition-all hover:shadow-elevated hover:-translate-y-0.5")}>
-      <div className="flex items-start justify-between">
+    <Card className={cn(gradClass, "relative overflow-hidden shadow-soft p-5 transition-all hover:shadow-elevated hover:-translate-y-0.5")}>
+      <div
+        className="water-wave"
+        style={{ "--water-wave-color": waveColor, "--water-wave-color-2": waveColor2 } as CSSProperties}
+        aria-hidden="true"
+      />
+
+      <div className="relative z-10 flex items-start justify-between">
         <div>
+
           <div className={cn("flex h-10 w-10 items-center justify-center rounded-xl shadow-soft", accentClass)}>
             <Droplet className="h-5 w-5" />
           </div>
@@ -106,7 +127,7 @@ function BlockCard({
       </div>
 
 
-      <div className="mt-4 space-y-1">
+      <div className="relative z-10 mt-4 space-y-1">
         {loading ? (
           <div className="h-10 w-32 animate-pulse rounded bg-muted" />
         ) : last ? (
@@ -126,13 +147,14 @@ function BlockCard({
         )}
       </div>
 
-      <Button asChild className="w-full mt-5" variant={last ? "secondary" : "default"}>
+      <Button asChild className="relative z-10 w-full mt-5" variant={last ? "secondary" : "default"}>
         <Link to="/leitura/$bloco" params={{ bloco }}>
           <Plus className="mr-1 h-4 w-4" />
           Nova leitura
           <ArrowRight className="ml-auto h-4 w-4" />
         </Link>
       </Button>
+
     </Card>
   );
 }
