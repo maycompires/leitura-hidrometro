@@ -132,10 +132,22 @@ export function ReportsPage() {
       for (const r of sorted) {
         const d = new Date(r.data_hora);
         const key = d.toISOString().slice(0, 10);
-        byDay.set(key, Number(r.leitura_atual));
+        // usa a maior leitura do dia, para o caso de múltiplas leituras
+        byDay.set(key, Math.max(byDay.get(key) ?? 0, Number(r.leitura_atual)));
       }
       const days = [...byDay.entries()].sort(([a], [c]) => a.localeCompare(c));
+
+      // Semeia `prev` com a última leitura do bloco anterior ao início do período,
+      // para que o primeiro dia (ex.: 01/07) tenha uma base de cálculo.
       let prev: number | null = null;
+      if (days.length > 0) {
+        const firstDayStart = new Date(`${days[0][0]}T00:00:00`).getTime();
+        const priorReadings = readings
+          .filter((r) => r.bloco === b && new Date(r.data_hora).getTime() < firstDayStart)
+          .sort((a, c) => new Date(c.data_hora).getTime() - new Date(a.data_hora).getTime());
+        if (priorReadings.length > 0) prev = Number(priorReadings[0].leitura_atual);
+      }
+
       for (const [day, leitura] of days) {
         const consumo = prev === null ? 0 : Math.max(0, (leitura - prev) / div);
         prev = leitura;
@@ -144,7 +156,7 @@ export function ReportsPage() {
       }
     }
     return out;
-  }, [byBlocoSorted]);
+  }, [byBlocoSorted, readings]);
 
   // Média de consumo diário por bloco — alterna entre ignorar a primeira leitura (consumo inicial zero) ou incluir todos os dias.
   const mediaByBloco = useMemo(() => {
