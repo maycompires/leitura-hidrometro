@@ -112,10 +112,9 @@ function BlockCard({
         aria-hidden="true"
       />
 
-
       <div className="relative z-10 flex items-start justify-between">
-
         <div>
+
           <div className={cn("flex h-10 w-10 items-center justify-center rounded-xl shadow-soft", accentClass)}>
             <Droplet className="h-5 w-5" />
           </div>
