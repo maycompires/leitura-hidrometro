@@ -195,9 +195,8 @@
   pointer-events: none;
 }
 
-
-
 @media (prefers-reduced-motion: reduce) {
+
   .water-wave {
     animation: none;
   }
