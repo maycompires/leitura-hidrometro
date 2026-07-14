@@ -45,15 +45,24 @@ export const analyzeConsumption = createServerFn({ method: "POST" })
 
     const prompt = `Analise os dados diários de consumo de água (m³) dos 4 blocos do condomínio no período "${data.period}" e identifique MUDANÇAS BRUSCAS de consumo (picos, quedas anormais, padrões fora da média) por bloco.
 
+CONTEXTO DA INSTALAÇÃO HIDRÁULICA (considere na análise):
+- Os 4 blocos (A, B, C, D) são abastecidos por uma cisterna comum, que alimenta as caixas d'água de cada bloco.
+- APENAS o Bloco A possui alimentação alternativa direto da rua (bypass da cisterna). Portanto:
+  * Picos isolados no Bloco A podem indicar uso da alimentação direta da rua (cisterna vazia, manutenção, teste).
+  * Quedas simultâneas em A, B, C e D sugerem problema na cisterna (falta de água, falha na bomba, entupimento) e não necessariamente queda real de consumo.
+  * Picos simultâneos em todos os blocos podem indicar vazamento na tubulação após a cisterna ou aumento geral de ocupação.
+  * Pico isolado em B, C ou D (sem correspondência em A) tende a indicar vazamento localizado ou consumo anormal daquele bloco.
+
 IMPORTANTE: As leituras começaram em 15/06/2026. A primeira leitura de cada bloco já foi removida dos dados (pois tinha consumo zero por não haver leitura anterior). Considere APENAS as leituras fornecidas abaixo, sem mencionar consumos zerados iniciais.
 
 Dados:
 ${JSON.stringify(summary, null, 2)}
 
 Responda em português, formato Markdown conciso:
-- Para cada bloco com anomalia, um item começando com "**Bloco X**:" descrevendo a anomalia (data, valor, % de variação vs média) e severidade (alta/média/baixa).
+- Para cada bloco com anomalia, um item começando com "**Bloco X**:" descrevendo a anomalia (data, valor, % de variação vs média), severidade (alta/média/baixa) e, quando fizer sentido, a provável causa considerando o contexto hidráulico acima (cisterna comum / bypass do Bloco A).
 - Se um bloco estiver normal, diga "Bloco X: consumo dentro do esperado".
-- Finalize com uma seção "### Recomendações" com ações práticas (verificar vazamento, conferir leitura, etc).
+- Se detectar padrão simultâneo entre blocos, destaque isso (ex.: "queda simultânea em A/B/C/D sugere problema na cisterna").
+- Finalize com uma seção "### Recomendações" com ações práticas (verificar vazamento no bloco X, inspecionar cisterna/bomba, conferir se o bypass do Bloco A foi acionado, etc).
 - Seja direto, sem enrolação.`;
 
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
