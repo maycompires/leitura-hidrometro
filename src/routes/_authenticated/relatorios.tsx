@@ -91,9 +91,13 @@ export function ReportsPage() {
   const chartData = useMemo(() => {
     const buckets: Record<string, Record<Bloco, number> & { label: string; sortKey: number }> = {} as any;
     for (const r of filtered) {
-      const k = groupKey(new Date(r.data_hora), period);
+      const d = new Date(r.data_hora);
+      const k = groupKey(d, period);
+      const sortKey = period === "year"
+        ? d.getFullYear() * 100 + d.getMonth()
+        : d.getTime();
       if (!buckets[k]) {
-        buckets[k] = { label: k, A: 0, B: 0, C: 0, D: 0, sortKey: new Date(r.data_hora).getTime() } as any;
+        buckets[k] = { label: k, A: 0, B: 0, C: 0, D: 0, sortKey } as any;
       }
       buckets[k][r.bloco] += Number(r.consumo_m3);
     }
