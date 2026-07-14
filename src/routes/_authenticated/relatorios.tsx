@@ -38,7 +38,8 @@ function monthLabel(key: string) {
 function groupKey(d: Date, p: Period) {
   if (p === "day") return d.toLocaleTimeString("pt-BR", { hour: "2-digit" });
   if (p === "week" || p === "month") return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
-  return d.toLocaleDateString("pt-BR", { month: "short" });
+  const mes = d.toLocaleDateString("pt-BR", { month: "short" }).replace(".", "");
+  return `${mes}/${String(d.getFullYear()).slice(2)}`;
 }
 
 export function ReportsPage() {
