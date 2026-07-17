@@ -53,13 +53,21 @@ CONTEXTO DA INSTALAÇÃO HIDRÁULICA (considere na análise):
   * Picos simultâneos em todos os blocos podem indicar vazamento na tubulação após a cisterna ou aumento geral de ocupação.
   * Pico isolado em B, C ou D (sem correspondência em A) tende a indicar vazamento localizado ou consumo anormal daquele bloco.
 
+OCUPAÇÃO E ÁREAS COMUNS (use para ponderar se o consumo está proporcional):
+- Bloco A: cerca de 10 apartamentos ocupados.
+- Bloco B: cerca de 8 apartamentos ocupados.
+- Bloco C: cerca de 6 apartamentos ocupados.
+- Bloco D: cerca de 7 apartamentos ocupados.
+- Bloco C: o consumo costuma ser mais alto porque compartilha áreas comuns com banheiros, ducha de piscina e salão de festas. Portanto, uma média maior no Bloco C pode ser esperada e não necessariamente indica vazamento.
+- Calcule e mencione consumo médio per capita aproximado (consumo total ÷ apartamentos ocupados) quando ajudar a comparar blocos.
+
 IMPORTANTE: As leituras começaram em 15/06/2026. A primeira leitura de cada bloco já foi removida dos dados (pois tinha consumo zero por não haver leitura anterior). Considere APENAS as leituras fornecidas abaixo, sem mencionar consumos zerados iniciais.
 
 Dados:
 ${JSON.stringify(summary, null, 2)}
 
 Responda em português, formato Markdown conciso:
-- Para cada bloco com anomalia, um item começando com "**Bloco X**:" descrevendo a anomalia (data, valor, % de variação vs média), severidade (alta/média/baixa) e, quando fizer sentido, a provável causa considerando o contexto hidráulico acima (cisterna comum / bypass do Bloco A).
+- Para cada bloco com anomalia, um item começando com "**Bloco X**:" descrevendo a anomalia (data, valor, % de variação vs média), severidade (alta/média/baixa) e, quando fizer sentido, a provável causa considerando o contexto hidráulico e a ocupação acima.
 - Se um bloco estiver normal, diga "Bloco X: consumo dentro do esperado".
 - Se detectar padrão simultâneo entre blocos, destaque isso (ex.: "queda simultânea em A/B/C/D sugere problema na cisterna").
 - Finalize com uma seção "### Recomendações" com ações práticas (verificar vazamento no bloco X, inspecionar cisterna/bomba, conferir se o bypass do Bloco A foi acionado, etc).
