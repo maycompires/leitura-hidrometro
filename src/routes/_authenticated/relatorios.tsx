@@ -17,7 +17,9 @@ import { AnalysisReport } from "@/components/AnalysisReport";
 import { BLOCOS, fetchReadings, type Bloco, type Reading } from "@/lib/api";
 import { analyzeConsumption } from "@/lib/anomalies.functions";
 import { toast } from "sonner";
-import { fmtLeitura, fmtConsumo, fmtM3Total, divisorBloco } from "@/lib/utils";
+import { fmtLeitura, fmtConsumo, fmtM3Total, divisorBloco, fmtBRL } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { Droplet } from "lucide-react";
 import { mediaIgnorandoZeroInicial, mediaIncluindoZeros } from "@/lib/media";
 
 export const Route = createFileRoute("/_authenticated/relatorios")({
