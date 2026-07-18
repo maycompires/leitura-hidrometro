@@ -50,6 +50,16 @@ export function ReportsPage() {
   const [analyzing, setAnalyzing] = useState(false);
   const [incluirZeros, setIncluirZeros] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<string>(() => monthKey(new Date()));
+  const [tarifa, setTarifa] = useState<number>(() => {
+    if (typeof window === "undefined") return 14.31;
+    const saved = Number(window.localStorage.getItem("tarifa_m3"));
+    return Number.isFinite(saved) && saved > 0 ? saved : 14.31;
+  });
+  const [incluirEsgoto, setIncluirEsgoto] = useState<boolean>(() => {
+    if (typeof window === "undefined") return true;
+    return window.localStorage.getItem("incluir_esgoto") !== "false";
+  });
+  const tarifaEfetiva = tarifa * (incluirEsgoto ? 2 : 1);
   const runAnalysis = useServerFn(analyzeConsumption);
   const { data: readings = [] } = useQuery({ queryKey: ["readings"], queryFn: () => fetchReadings() });
 
