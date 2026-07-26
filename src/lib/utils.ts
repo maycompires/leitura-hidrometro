@@ -63,10 +63,3 @@ export function fmtM3Total(value: number | string) {
   const l = abs % 1000;
   return `${sign}${fmtNum(m3)} m³ ${String(l).padStart(3, "0")} L`;
 }
-
-/** Formata valor monetário em Reais (R$). */
-export function fmtBRL(value: number | string) {
-  const n = Number(value);
-  if (!Number.isFinite(n)) return "R$ 0,00";
-  return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-}

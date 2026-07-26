@@ -17,9 +17,7 @@ import { AnalysisReport } from "@/components/AnalysisReport";
 import { BLOCOS, fetchReadings, type Bloco, type Reading } from "@/lib/api";
 import { analyzeConsumption } from "@/lib/anomalies.functions";
 import { toast } from "sonner";
-import { fmtLeitura, fmtConsumo, fmtM3Total, divisorBloco, fmtBRL } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
-import { Droplet } from "lucide-react";
+import { fmtLeitura, fmtConsumo, fmtM3Total, divisorBloco } from "@/lib/utils";
 import { mediaIgnorandoZeroInicial, mediaIncluindoZeros } from "@/lib/media";
 
 export const Route = createFileRoute("/_authenticated/relatorios")({
@@ -50,16 +48,6 @@ export function ReportsPage() {
   const [analyzing, setAnalyzing] = useState(false);
   const [incluirZeros, setIncluirZeros] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<string>(() => monthKey(new Date()));
-  const [tarifa, setTarifa] = useState<number>(() => {
-    if (typeof window === "undefined") return 14.31;
-    const saved = Number(window.localStorage.getItem("tarifa_m3"));
-    return Number.isFinite(saved) && saved > 0 ? saved : 14.31;
-  });
-  const [incluirEsgoto, setIncluirEsgoto] = useState<boolean>(() => {
-    if (typeof window === "undefined") return true;
-    return window.localStorage.getItem("incluir_esgoto") !== "false";
-  });
-  const tarifaEfetiva = tarifa * (incluirEsgoto ? 2 : 1);
   const runAnalysis = useServerFn(analyzeConsumption);
   const { data: readings = [] } = useQuery({ queryKey: ["readings"], queryFn: () => fetchReadings() });
 
@@ -425,78 +413,6 @@ ${blocosHtml}
           <p className="text-xl font-semibold tabular-nums mt-1">{fmtM3Total(totals.media)}</p>
         </Card>
       </div>
-
-      <Card className="p-4 shadow-soft border-emerald-200/60 bg-gradient-to-br from-emerald-50/60 to-transparent dark:from-emerald-950/20">
-        <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
-          <div className="flex items-center gap-2">
-            <Droplet className="h-4 w-4 text-emerald-600" />
-            <h2 className="text-sm font-medium">Custo estimado {period === "year" ? "— histórico completo" : `— ${monthLabel(selectedMonth)}`}</h2>
-          </div>
-          <div className="flex items-center gap-3 flex-wrap">
-            <div className="flex items-center gap-2">
-              <Label htmlFor="tarifa" className="text-xs text-muted-foreground">Tarifa (R$/m³)</Label>
-              <Input
-                id="tarifa"
-                type="number"
-                step="0.01"
-                min="0"
-                inputMode="decimal"
-                value={tarifa}
-                onChange={(e) => {
-                  const v = Number(e.target.value);
-                  setTarifa(v);
-                  if (typeof window !== "undefined") window.localStorage.setItem("tarifa_m3", String(v));
-                }}
-                className="h-8 w-24"
-                data-testid="input-tarifa"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <Switch
-                id="incluir-esgoto"
-                checked={incluirEsgoto}
-                onCheckedChange={(v) => {
-                  setIncluirEsgoto(v);
-                  if (typeof window !== "undefined") window.localStorage.setItem("incluir_esgoto", String(v));
-                }}
-              />
-              <Label htmlFor="incluir-esgoto" className="text-xs cursor-pointer">Incluir esgoto (2×)</Label>
-            </div>
-          </div>
-        </div>
-        <p className="text-[11px] text-muted-foreground mb-3">
-          Tarifa efetiva: <span className="font-medium tabular-nums text-foreground/80">{fmtBRL(tarifaEfetiva)}/m³</span>
-        </p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {BLOCOS.map((b) => {
-            const custoTotal = totals.byBloco[b] * tarifaEfetiva;
-            const custoMedio = mediaByBloco[b] * tarifaEfetiva;
-            const dot = { A: "bg-bloco-a", B: "bg-bloco-b", C: "bg-bloco-c", D: "bg-bloco-d" }[b];
-            return (
-              <div key={b} className="rounded-lg border bg-card/60 p-3">
-                <div className="flex items-center gap-2">
-                  <span className={`h-2.5 w-2.5 rounded-full ${dot}`} aria-hidden />
-                  <p className="text-xs text-muted-foreground">Bloco {b}</p>
-                </div>
-                <p className="text-lg font-semibold tabular-nums mt-1" data-testid={`custo-total-${b}`}>{fmtBRL(custoTotal)}</p>
-                <p className="text-[11px] text-muted-foreground mt-1">
-                  Média/dia: <span className="tabular-nums font-medium text-foreground/80" data-testid={`custo-media-${b}`}>{fmtBRL(custoMedio)}</span>
-                </p>
-              </div>
-            );
-          })}
-        </div>
-        <div className="grid grid-cols-2 gap-3 mt-3">
-          <div className="rounded-lg border bg-card/60 p-3">
-            <p className="text-xs text-muted-foreground">Custo total do período</p>
-            <p className="text-xl font-semibold tabular-nums mt-1" data-testid="custo-total-geral">{fmtBRL(totals.total * tarifaEfetiva)}</p>
-          </div>
-          <div className="rounded-lg border bg-card/60 p-3">
-            <p className="text-xs text-muted-foreground">Custo médio diário</p>
-            <p className="text-xl font-semibold tabular-nums mt-1">{fmtBRL(totals.media * tarifaEfetiva)}</p>
-          </div>
-        </div>
-      </Card>
 
       <Card className="p-4 shadow-soft border-sky-200/60 bg-gradient-to-br from-sky-50/60 to-transparent dark:from-sky-950/20">
         <div className="flex items-center justify-between gap-3 flex-wrap">
