@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,11 +10,52 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Pencil, Trash2, ImageIcon, Loader2 } from "lucide-react";
+import { Pencil, Trash2, ImageIcon, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { BLOCOS, fetchProfiles, fetchReadings, signedPhotoUrl, type Bloco, type Reading } from "@/lib/api";
 import { fmtLeitura, fmtConsumo, litersDigits } from "@/lib/utils";
+
+const PERIODOS = [
+  { value: "tudo", label: "Tudo" },
+  { value: "hoje", label: "Hoje" },
+  { value: "semana", label: "Semana" },
+  { value: "mes", label: "Mês" },
+  { value: "ano", label: "Ano" },
+];
+
+function toISODate(d: Date) {
+  return d.toISOString().split("T")[0];
+}
+
+function getPeriodDates(periodo: string) {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  switch (periodo) {
+    case "hoje": {
+      const s = toISODate(today);
+      return { from: s, to: s };
+    }
+    case "semana": {
+      const start = new Date(today);
+      start.setDate(today.getDate() - today.getDay());
+      const end = new Date(today);
+      end.setDate(start.getDate() + 6);
+      return { from: toISODate(start), to: toISODate(end) };
+    }
+    case "mes": {
+      const start = new Date(today.getFullYear(), today.getMonth(), 1);
+      return { from: toISODate(start), to: toISODate(today) };
+    }
+    case "ano": {
+      const start = new Date(today.getFullYear(), 0, 1);
+      return { from: toISODate(start), to: toISODate(today) };
+    }
+    default:
+      return { from: "", to: "" };
+  }
+}
+
 
 export const Route = createFileRoute("/_authenticated/historico")({
   component: HistoricoPage,
@@ -24,11 +65,18 @@ function HistoricoPage() {
   const qc = useQueryClient();
   const [bloco, setBloco] = useState<"all" | Bloco>("all");
   const [usuario, setUsuario] = useState<string>("all");
+  const [periodo, setPeriodo] = useState<string>("tudo");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [editing, setEditing] = useState<Reading | null>(null);
   const [editValor, setEditValor] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const { from: f, to: t } = getPeriodDates(periodo);
+    setFrom(f);
+    setTo(t);
+  }, [periodo]);
 
   const { data: readings = [], isLoading } = useQuery({
     queryKey: ["readings"],
@@ -45,6 +93,14 @@ function HistoricoPage() {
     if (to && new Date(r.data_hora) > new Date(to + "T23:59:59")) return false;
     return true;
   });
+
+  const clearFilters = () => {
+    setBloco("all");
+    setUsuario("all");
+    setPeriodo("tudo");
+    setFrom("");
+    setTo("");
+  };
 
   const del = useMutation({
     mutationFn: async (id: string) => {
@@ -91,7 +147,16 @@ function HistoricoPage() {
       </div>
 
       <Card className="p-4 shadow-soft">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 items-end">
+          <div className="space-y-1">
+            <Label className="text-xs">Período</Label>
+            <Select value={periodo} onValueChange={(v) => setPeriodo(v)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {PERIODOS.map((p) => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
           <div className="space-y-1">
             <Label className="text-xs">Bloco</Label>
             <Select value={bloco} onValueChange={(v) => setBloco(v as any)}>
@@ -114,12 +179,17 @@ function HistoricoPage() {
           </div>
           <div className="space-y-1">
             <Label className="text-xs">De</Label>
-            <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+            <Input type="date" value={from} onChange={(e) => { setPeriodo("tudo"); setFrom(e.target.value); }} />
           </div>
           <div className="space-y-1">
             <Label className="text-xs">Até</Label>
-            <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+            <Input type="date" value={to} onChange={(e) => { setPeriodo("tudo"); setTo(e.target.value); }} />
           </div>
+        </div>
+        <div className="flex justify-end mt-3">
+          <Button variant="ghost" size="sm" onClick={clearFilters} className="h-8 gap-1 text-xs">
+            <X className="h-3.5 w-3.5" /> Limpar filtros
+          </Button>
         </div>
       </Card>
 
