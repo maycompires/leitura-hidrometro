@@ -65,11 +65,18 @@ function HistoricoPage() {
   const qc = useQueryClient();
   const [bloco, setBloco] = useState<"all" | Bloco>("all");
   const [usuario, setUsuario] = useState<string>("all");
+  const [periodo, setPeriodo] = useState<string>("tudo");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [editing, setEditing] = useState<Reading | null>(null);
   const [editValor, setEditValor] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const { from: f, to: t } = getPeriodDates(periodo);
+    setFrom(f);
+    setTo(t);
+  }, [periodo]);
 
   const { data: readings = [], isLoading } = useQuery({
     queryKey: ["readings"],
