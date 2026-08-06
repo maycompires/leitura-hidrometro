@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,11 +10,52 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Pencil, Trash2, ImageIcon, Loader2 } from "lucide-react";
+import { Pencil, Trash2, ImageIcon, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { BLOCOS, fetchProfiles, fetchReadings, signedPhotoUrl, type Bloco, type Reading } from "@/lib/api";
 import { fmtLeitura, fmtConsumo, litersDigits } from "@/lib/utils";
+
+const PERIODOS = [
+  { value: "tudo", label: "Tudo" },
+  { value: "hoje", label: "Hoje" },
+  { value: "semana", label: "Semana" },
+  { value: "mes", label: "Mês" },
+  { value: "ano", label: "Ano" },
+];
+
+function toISODate(d: Date) {
+  return d.toISOString().split("T")[0];
+}
+
+function getPeriodDates(periodo: string) {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  switch (periodo) {
+    case "hoje": {
+      const s = toISODate(today);
+      return { from: s, to: s };
+    }
+    case "semana": {
+      const start = new Date(today);
+      start.setDate(today.getDate() - today.getDay());
+      const end = new Date(today);
+      end.setDate(start.getDate() + 6);
+      return { from: toISODate(start), to: toISODate(end) };
+    }
+    case "mes": {
+      const start = new Date(today.getFullYear(), today.getMonth(), 1);
+      return { from: toISODate(start), to: toISODate(today) };
+    }
+    case "ano": {
+      const start = new Date(today.getFullYear(), 0, 1);
+      return { from: toISODate(start), to: toISODate(today) };
+    }
+    default:
+      return { from: "", to: "" };
+  }
+}
+
 
 export const Route = createFileRoute("/_authenticated/historico")({
   component: HistoricoPage,
