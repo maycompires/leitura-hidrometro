@@ -94,6 +94,14 @@ function HistoricoPage() {
     return true;
   });
 
+  const clearFilters = () => {
+    setBloco("all");
+    setUsuario("all");
+    setPeriodo("tudo");
+    setFrom("");
+    setTo("");
+  };
+
   const del = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("readings").delete().eq("id", id);
