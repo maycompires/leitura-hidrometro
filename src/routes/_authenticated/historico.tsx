@@ -147,7 +147,16 @@ function HistoricoPage() {
       </div>
 
       <Card className="p-4 shadow-soft">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 items-end">
+          <div className="space-y-1">
+            <Label className="text-xs">Período</Label>
+            <Select value={periodo} onValueChange={(v) => setPeriodo(v)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {PERIODOS.map((p) => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
           <div className="space-y-1">
             <Label className="text-xs">Bloco</Label>
             <Select value={bloco} onValueChange={(v) => setBloco(v as any)}>
@@ -170,12 +179,17 @@ function HistoricoPage() {
           </div>
           <div className="space-y-1">
             <Label className="text-xs">De</Label>
-            <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+            <Input type="date" value={from} onChange={(e) => { setPeriodo("tudo"); setFrom(e.target.value); }} />
           </div>
           <div className="space-y-1">
             <Label className="text-xs">Até</Label>
-            <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+            <Input type="date" value={to} onChange={(e) => { setPeriodo("tudo"); setTo(e.target.value); }} />
           </div>
+        </div>
+        <div className="flex justify-end mt-3">
+          <Button variant="ghost" size="sm" onClick={clearFilters} className="h-8 gap-1 text-xs">
+            <X className="h-3.5 w-3.5" /> Limpar filtros
+          </Button>
         </div>
       </Card>
 
