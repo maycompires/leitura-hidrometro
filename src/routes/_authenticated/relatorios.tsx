@@ -189,6 +189,15 @@ export function ReportsPage() {
     });
   }, [readings, filtered, period]);
 
+  // Média do consumo diário total — ignora o primeiro dia (consumo inicial zero) para o cálculo.
+  const mediaTotalDiario = useMemo(() => {
+    if (dailyTotalData.length === 0) return 0;
+    const ignorarZeroInicial = !incluirZeros;
+    const serie = ignorarZeroInicial ? dailyTotalData.slice(1) : dailyTotalData;
+    if (serie.length === 0) return 0;
+    const soma = serie.reduce((acc, d) => acc + d.consumo, 0);
+    return Number((soma / serie.length).toFixed(3));
+  }, [dailyTotalData, incluirZeros]);
 
   const exportCSV = () => {
     const lines: string[][] = [];
@@ -460,6 +469,15 @@ ${blocosHtml}
                 }}
               />
               <Bar dataKey="consumo" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
+              {mediaTotalDiario > 0 && (
+                <ReferenceLine
+                  y={mediaTotalDiario}
+                  stroke="#8B5CF6"
+                  strokeDasharray="4 4"
+                  strokeOpacity={0.7}
+                  label={{ value: `Média ${fmtM3Total(mediaTotalDiario)}`, position: "insideTopRight", fill: "var(--color-muted-foreground)", fontSize: 10 }}
+                />
+              )}
             </BarChart>
           </ResponsiveContainer>
         </div>
