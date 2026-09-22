@@ -460,6 +460,15 @@ ${blocosHtml}
                 }}
               />
               <Bar dataKey="consumo" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
+              {mediaTotalDiario > 0 && (
+                <ReferenceLine
+                  y={mediaTotalDiario}
+                  stroke="#8B5CF6"
+                  strokeDasharray="4 4"
+                  strokeOpacity={0.7}
+                  label={{ value: `Média ${fmtM3Total(mediaTotalDiario)}`, position: "insideTopRight", fill: "var(--color-muted-foreground)", fontSize: 10 }}
+                />
+              )}
             </BarChart>
           </ResponsiveContainer>
         </div>
