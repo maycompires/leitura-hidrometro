@@ -451,7 +451,10 @@ ${blocosHtml}
 
 
       <Card className="p-4 shadow-soft">
-        <h2 className="text-sm font-medium mb-3">Consumo diário total {period === "year" ? "— histórico completo" : `— ${monthLabel(selectedMonth)}`}</h2>
+        <h2 className="text-sm font-medium mb-1">Consumo diário total {period === "year" ? "— histórico completo" : `— ${monthLabel(selectedMonth)}`}</h2>
+        {mediaTotalDiario > 0 && (
+          <p className="text-xs text-muted-foreground mb-3">Média diária: <span className="tabular-nums font-medium text-foreground/80">{fmtM3Total(mediaTotalDiario)}</span></p>
+        )}
         <div className="h-72 w-full" data-chart="geral-daily">
           <ResponsiveContainer>
             <BarChart data={dailyTotalData}>
