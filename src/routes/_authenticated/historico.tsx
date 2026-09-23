@@ -70,6 +70,7 @@ function HistoricoPage() {
   const [to, setTo] = useState("");
   const [editing, setEditing] = useState<Reading | null>(null);
   const [editValor, setEditValor] = useState("");
+  const [editObs, setEditObs] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -119,7 +120,10 @@ function HistoricoPage() {
       if (!editing) return;
       const num = Number(editValor.replace(",", "."));
       if (!Number.isFinite(num)) throw new Error("Valor inválido");
-      const { error } = await supabase.from("readings").update({ leitura_atual: num }).eq("id", editing.id);
+      const { error } = await supabase
+        .from("readings")
+        .update({ leitura_atual: num, observacoes: editObs || null })
+        .eq("id", editing.id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -235,7 +239,7 @@ function HistoricoPage() {
                                 <ImageIcon className="h-4 w-4" />
                               </Button>
                             )}
-                            <Button variant="ghost" size="icon" onClick={() => { setEditing(r); setEditValor(String(r.leitura_atual)); }}>
+                            <Button variant="ghost" size="icon" onClick={() => { setEditing(r); setEditValor(String(r.leitura_atual)); setEditObs(r.observacoes ?? ""); }}>
                               <Pencil className="h-4 w-4" />
                             </Button>
                             <Button variant="ghost" size="icon" onClick={() => confirm("Excluir esta leitura?") && del.mutate(r.id)}>
@@ -265,6 +269,13 @@ function HistoricoPage() {
                 Últimos {litersDigits(editing.bloco)} dígitos = litros; anteriores = m³.
               </p>
             )}
+            <Label>Observação</Label>
+            <textarea
+              className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring min-h-[80px] resize-y"
+              value={editObs}
+              onChange={(e) => setEditObs(e.target.value)}
+              placeholder="Sem observação"
+            />
             <Button className="w-full" onClick={() => update.mutate()} disabled={update.isPending}>
               {update.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Salvar
             </Button>
