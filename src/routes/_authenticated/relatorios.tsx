@@ -22,6 +22,16 @@ import { mediaIgnorandoZeroInicial, mediaIncluindoZeros } from "@/lib/media";
 
 export const Route = createFileRoute("/_authenticated/relatorios")({
   component: ReportsPage,
+  head: () => ({
+    meta: [
+      { title: "Relatórios de consumo | Terra do Sol" },
+      { name: "description", content: "Relatórios técnicos e análise de consumo de água do Condomínio Residencial Terra do Sol." },
+      { property: "og:title", content: "Relatórios de consumo | Terra do Sol" },
+      { property: "og:description", content: "Relatórios técnicos e análise de consumo de água do Condomínio Residencial Terra do Sol." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
 });
 
 type Period = "day" | "week" | "month" | "year";
@@ -44,7 +54,7 @@ function groupKey(d: Date, p: Period) {
 
 export function ReportsPage() {
   const [period, setPeriod] = useState<Period>("month");
-  const [analysis, setAnalysis] = useState<string>("");
+  const [analysis, setAnalysis] = useState<Awaited<ReturnType<typeof analyzeConsumption>> | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [incluirZeros, setIncluirZeros] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<string>(() => monthKey(new Date()));
@@ -255,6 +265,10 @@ export function ReportsPage() {
         (c) => `<div class="chart-cell"><h3>${c.title}</h3><div class="chart">${c.svg}</div></div>`,
       )
       .join("")}</div>`;
+    const aiReportElement = document.querySelector("[data-ai-report]");
+    const aiReportHtml = aiReportElement
+      ? `<section class="ai-report page-break"><h2>RELATÓRIO TÉCNICO DE ANÁLISE</h2>${aiReportElement.innerHTML}</section>`
+      : `<section class="notice"><strong>Análise técnica:</strong> gere a análise de IA antes de exportar para incluí-la neste documento.</section>`;
 
     const blocosHtml = BLOCOS.map((b) => {
       return `
@@ -269,32 +283,35 @@ ${byBlocoSorted[b].map((r) => `<tr><td>${new Date(r.data_hora).toLocaleString("p
 </section>`;
     }).join("");
 
-    const html = `<!doctype html><html><head><meta charset="utf-8"><title>Relatório Terra do Sol</title>
+    const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Relatório Terra do Sol</title>
 <style>
-body{font-family:system-ui,sans-serif;padding:32px;color:#1e293b}
-h1{color:#0369a1;margin:0 0 4px}
-h2{color:#0369a1;margin:0 0 8px;font-size:18px}
-h3{color:#0369a1;margin:0 0 6px;font-size:13px;text-align:center}
-.meta{color:#64748b;font-size:13px;margin:0 0 12px}
+@page{size:A4;margin:3cm 2cm 2cm 3cm;@bottom-center{content:"Página " counter(page);font:10pt Arial;color:#64748b}}
+*{box-sizing:border-box}body{font-family:"Times New Roman",serif;color:#111827;font-size:12pt;line-height:1.5;margin:0}
+.cover{height:225mm;display:flex;flex-direction:column;align-items:center;text-align:center;page-break-after:always}.cover .institution{font:700 12pt Arial,sans-serif;text-transform:uppercase}.cover h1{margin:auto 0 0;font:700 16pt Arial,sans-serif;text-transform:uppercase;max-width:140mm}.cover .period{margin:20mm 0 auto}.cover .place{margin-bottom:0}
+h1{color:#0c4a6e;margin:0 0 4px}h2{color:#0c4a6e;margin:18pt 0 10pt;font:700 14pt Arial,sans-serif;text-transform:uppercase}h3{color:#0c4a6e;margin:12pt 0 6pt;font:700 12pt Arial,sans-serif}
+p{margin:0 0 10pt;text-align:justify}.meta{color:#475569;font:10pt Arial,sans-serif;margin:0 0 12px}.empty{color:#64748b;font-style:italic}
 .empty{color:#94a3b8;font-style:italic}
 table{width:100%;border-collapse:collapse;margin-top:8px}
-th,td{border:1px solid #e2e8f0;padding:8px;text-align:left;font-size:13px}
-th{background:#f1f5f9}
-.bloco{margin-top:24px;page-break-inside:avoid}
+th,td{border:1px solid #cbd5e1;padding:7px;text-align:left;font:9pt Arial,sans-serif}th{background:#e2e8f0;font-weight:700}
+.bloco{margin-top:24px;page-break-inside:auto}
 .bloco + .bloco{page-break-before:always}
 .summary{margin-top:16px}
 .charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;page-break-after:always}
-.chart-cell{border:1px solid #e2e8f0;border-radius:8px;padding:8px;page-break-inside:avoid}
+.chart-cell{border:1px solid #cbd5e1;padding:8px;page-break-inside:avoid}
 .chart{width:100%}
 .chart svg{max-width:100%;height:auto;max-height:180px}
+.page-break{page-break-before:always}.ai-report header{background:#f1f5f9!important;padding:18px!important;border-bottom:2px solid #0c4a6e}.ai-report article{border:0!important;box-shadow:none!important}.ai-report section{page-break-inside:avoid}.ai-report ul,.ai-report ol{margin:0 0 10pt;padding-left:8mm}.ai-report [class*="grid"]{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.ai-report svg{display:none}.notice{margin:20px 0;padding:12px;border:1px solid #cbd5e1;background:#f8fafc;font:10pt Arial,sans-serif}.print-footer{position:fixed;bottom:-12mm;left:0;right:0;border-top:1px solid #cbd5e1;padding-top:3mm;text-align:center;color:#64748b;font:9pt Arial,sans-serif}
 </style></head><body>
-<h1>Condomínio Terra do Sol — Relatório de Consumo</h1>
+<div class="print-footer">Condomínio Residencial Terra do Sol · Relatório de consumo de água</div>
+<section class="cover"><p class="institution">Condomínio Residencial Terra do Sol</p><h1>Relatório técnico de análise do consumo de água</h1><p class="period">Período analisado: ${period}<br>Emitido em ${new Date().toLocaleString("pt-BR")}</p><p class="place">Terra do Sol<br>2026</p></section>
+<h2>1 Síntese do consumo</h2>
 <p class="meta">Período: ${period} · Gerado em ${new Date().toLocaleString("pt-BR")}</p>
 <div class="summary">
   <table><thead><tr>${BLOCOS.map((b) => `<th>Bloco ${b}</th>`).join("")}<th>Total Geral</th></tr></thead>
   <tbody><tr>${BLOCOS.map((b) => `<td>${fmtConsumo(totals.byBloco[b], b)}</td>`).join("")}<td><strong>${fmtM3Total(totals.total)}</strong></td></tr></tbody></table>
 </div>
-${chartsGridHtml}
+${aiReportHtml}
+<section class="page-break"><h2>Gráficos de consumo</h2>${chartsGridHtml}</section>
 ${blocosHtml}
 </body></html>`;
 
@@ -311,7 +328,7 @@ ${blocosHtml}
       return;
     }
     setAnalyzing(true);
-    setAnalysis("");
+    setAnalysis(null);
     try {
       const payload = filtered.map((r) => ({
         bloco: r.bloco,
@@ -320,7 +337,7 @@ ${blocosHtml}
         leitura_atual: Number(r.leitura_atual),
       }));
       const res = await runAnalysis({ data: { readings: payload, period } });
-      setAnalysis(res.analysis);
+      setAnalysis(res);
       toast.success("Análise concluída");
     } catch (e: any) {
       toast.error(e?.message ?? "Falha na análise");
@@ -444,7 +461,13 @@ ${blocosHtml}
         )}
         {analysis && (
           <div className="mt-4">
-            <AnalysisReport markdown={analysis} />
+            <AnalysisReport
+              markdown={analysis.analysis}
+              anomalies={analysis.anomalies}
+              summaries={analysis.summaries}
+              period={period}
+              generatedAt={analysis.generatedAt}
+            />
           </div>
         )}
       </Card>
