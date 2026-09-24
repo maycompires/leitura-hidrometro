@@ -1,7 +1,9 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { AlertTriangle, AlertCircle, CheckCircle2, Lightbulb, Droplets } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Lightbulb, Droplets, FileText, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { fmtM3Total } from "@/lib/utils";
+import type { BlockConsumptionSummary, ConsumptionAnomaly } from "@/lib/anomaly-analysis";
 
 type Severity = "alta" | "media" | "baixa" | "ok";
 
@@ -82,8 +84,101 @@ const mdComponents = {
   ),
 };
 
-export function AnalysisReport({ markdown }: { markdown: string }) {
+export function AnalysisReport({
+  markdown,
+  anomalies = [],
+  summaries = [],
+  period,
+  generatedAt,
+}: {
+  markdown: string;
+  anomalies?: ConsumptionAnomaly[];
+  summaries?: BlockConsumptionSummary[];
+  period?: string;
+  generatedAt?: string;
+}) {
   const { items, recomendacoes } = parseBlocos(markdown);
+
+  if (/^#\s+RELATÓRIO TÉCNICO/im.test(markdown)) {
+    return (
+      <article className="overflow-hidden rounded-lg border bg-card shadow-soft" data-ai-report>
+        <header className="border-b bg-muted/35 px-5 py-6 text-center sm:px-8 sm:py-8">
+          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-md bg-primary text-primary-foreground">
+            <FileText className="h-5 w-5" />
+          </div>
+          <p className="text-xs font-semibold uppercase text-muted-foreground">Condomínio Residencial Terra do Sol</p>
+          <h2 className="mt-2 text-lg font-semibold uppercase sm:text-xl">Relatório técnico de análise do consumo de água</h2>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Período: {period ?? "selecionado"}
+            {generatedAt ? ` · Emitido em ${new Date(generatedAt).toLocaleString("pt-BR")}` : ""}
+          </p>
+        </header>
+
+        <div className="space-y-6 px-5 py-6 sm:px-8">
+          <section>
+            <div className="mb-3 flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-warning" />
+              <h3 className="text-sm font-semibold uppercase">Anomalias confirmadas acima de 30%</h3>
+            </div>
+            {anomalies.length ? (
+              <div className="overflow-x-auto rounded-md border">
+                <table className="w-full min-w-[620px] text-left text-xs">
+                  <thead className="bg-muted/60 text-muted-foreground">
+                    <tr>
+                      <th className="px-3 py-2.5 font-semibold">Bloco</th>
+                      <th className="px-3 py-2.5 font-semibold">Data</th>
+                      <th className="px-3 py-2.5 font-semibold">Consumo</th>
+                      <th className="px-3 py-2.5 font-semibold">Média</th>
+                      <th className="px-3 py-2.5 font-semibold">Excedente</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {anomalies.map((item) => (
+                      <tr key={`${item.bloco}-${item.data_hora}`} className="border-t">
+                        <td className="px-3 py-2.5 font-semibold">{item.bloco}</td>
+                        <td className="px-3 py-2.5">{new Date(item.data_hora).toLocaleDateString("pt-BR")}</td>
+                        <td className="px-3 py-2.5 tabular-nums">{fmtM3Total(item.consumo_m3)}</td>
+                        <td className="px-3 py-2.5 tabular-nums">{fmtM3Total(item.media_m3)}</td>
+                        <td className="px-3 py-2.5 font-semibold text-destructive">+{item.percentual_acima.toFixed(1).replace(".", ",")}%</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="flex items-start gap-2 rounded-md border border-success/30 bg-success/10 p-3 text-sm">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
+                Nenhuma leitura excedeu 30% acima da média do respectivo bloco.
+              </div>
+            )}
+          </section>
+
+          {summaries.length > 0 && (
+            <section className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {summaries.map((summary) => (
+                <div key={summary.bloco} className="rounded-md border bg-muted/20 p-3">
+                  <p className="text-[11px] font-semibold uppercase text-muted-foreground">Bloco {summary.bloco}</p>
+                  <p className="mt-1 text-sm font-semibold tabular-nums">{fmtM3Total(summary.media)}/dia</p>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground">{summary.leituras} leitura(s) válidas</p>
+                </div>
+              ))}
+            </section>
+          )}
+
+          <div className="abnt-report prose-none text-sm leading-7 text-foreground/90">
+            <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>
+              {markdown.replace(/^#\s+RELATÓRIO TÉCNICO DE ANÁLISE DO CONSUMO DE ÁGUA\s*/im, "")}
+            </ReactMarkdown>
+          </div>
+
+          <footer className="flex items-start gap-2 border-t pt-4 text-xs text-muted-foreground">
+            <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            Documento de apoio à gestão. As indicações devem ser confirmadas por inspeção técnica antes de intervenções.
+          </footer>
+        </div>
+      </article>
+    );
+  }
 
   if (items.length === 0) {
     return (
@@ -103,7 +198,7 @@ export function AnalysisReport({ markdown }: { markdown: string }) {
     <div className="space-y-4">
       <div className="grid grid-cols-3 gap-2">
         <StatChip label="Críticas" value={critCount} tone="rose" Icon={AlertTriangle} />
-        <StatChip label="Atenção" value={warnCount} tone="amber" Icon={AlertCircle} />
+         <StatChip label="Atenção" value={warnCount} tone="amber" Icon={AlertTriangle} />
         <StatChip label="Normais" value={okCount} tone="emerald" Icon={CheckCircle2} />
       </div>
 
