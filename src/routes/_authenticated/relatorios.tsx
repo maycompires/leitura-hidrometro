@@ -299,9 +299,8 @@ th,td{border:1px solid #cbd5e1;padding:7px;text-align:left;font:9pt Arial,sans-s
 .chart-cell{border:1px solid #cbd5e1;padding:8px;page-break-inside:avoid}
 .chart{width:100%}
 .chart svg{max-width:100%;height:auto;max-height:180px}
-.page-break{page-break-before:always}.ai-report header{background:#f1f5f9!important;padding:18px!important;border-bottom:2px solid #0c4a6e}.ai-report article{border:0!important;box-shadow:none!important}.ai-report section{page-break-inside:avoid}.ai-report ul,.ai-report ol{margin:0 0 10pt;padding-left:8mm}.ai-report [class*="grid"]{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.ai-report svg{display:none}.notice{margin:20px 0;padding:12px;border:1px solid #cbd5e1;background:#f8fafc;font:10pt Arial,sans-serif}.print-footer{position:fixed;bottom:-12mm;left:0;right:0;border-top:1px solid #cbd5e1;padding-top:3mm;text-align:center;color:#64748b;font:9pt Arial,sans-serif}
+.page-break{page-break-before:always}.ai-report header{background:#f1f5f9!important;padding:18px!important;border-bottom:2px solid #0c4a6e}.ai-report article{border:0!important;box-shadow:none!important}.ai-report section{page-break-inside:avoid}.ai-report ul,.ai-report ol{margin:0 0 10pt;padding-left:8mm}.ai-report [class*="grid"]{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.ai-report svg{display:none}.notice{margin:20px 0;padding:12px;border:1px solid #cbd5e1;background:#f8fafc;font:10pt Arial,sans-serif}.print-footer{margin-top:18mm;border-top:1px solid #cbd5e1;padding-top:3mm;text-align:center;color:#64748b;font:9pt Arial,sans-serif;page-break-inside:avoid}
 </style></head><body>
-<div class="print-footer">Condomínio Residencial Terra do Sol · Relatório de consumo de água</div>
 <section class="cover"><p class="institution">Condomínio Residencial Terra do Sol</p><h1>Relatório técnico de análise do consumo de água</h1><p class="period">Período analisado: ${period}<br>Emitido em ${new Date().toLocaleString("pt-BR")}</p><p class="place">Terra do Sol<br>2026</p></section>
 <h2>1 Síntese do consumo</h2>
 <p class="meta">Período: ${period} · Gerado em ${new Date().toLocaleString("pt-BR")}</p>
@@ -312,6 +311,7 @@ th,td{border:1px solid #cbd5e1;padding:7px;text-align:left;font:9pt Arial,sans-s
 ${aiReportHtml}
 <section class="page-break"><h2>Gráficos de consumo</h2>${chartsGridHtml}</section>
 ${blocosHtml}
+<div class="print-footer">Condomínio Residencial Terra do Sol · Relatório de consumo de água</div>
 </body></html>`;
 
     const w = window.open("", "_blank");
