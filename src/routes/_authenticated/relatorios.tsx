@@ -285,12 +285,11 @@ ${byBlocoSorted[b].map((r) => `<tr><td>${new Date(r.data_hora).toLocaleString("p
 
     const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Relatório Terra do Sol</title>
 <style>
-@page{size:A4;margin:3cm 2cm 2cm 3cm;@bottom-center{content:"Página " counter(page);font:10pt Arial;color:#64748b}}
+@page{size:A4;margin:3cm 2cm 2cm 3cm}
 *{box-sizing:border-box}body{font-family:"Times New Roman",serif;color:#111827;font-size:12pt;line-height:1.5;margin:0}
 .cover{height:225mm;display:flex;flex-direction:column;align-items:center;text-align:center;page-break-after:always}.cover .institution{font:700 12pt Arial,sans-serif;text-transform:uppercase}.cover h1{margin:auto 0 0;font:700 16pt Arial,sans-serif;text-transform:uppercase;max-width:140mm}.cover .period{margin:20mm 0 auto}.cover .place{margin-bottom:0}
 h1{color:#0c4a6e;margin:0 0 4px}h2{color:#0c4a6e;margin:18pt 0 10pt;font:700 14pt Arial,sans-serif;text-transform:uppercase}h3{color:#0c4a6e;margin:12pt 0 6pt;font:700 12pt Arial,sans-serif}
 p{margin:0 0 10pt;text-align:justify}.meta{color:#475569;font:10pt Arial,sans-serif;margin:0 0 12px}.empty{color:#64748b;font-style:italic}
-.empty{color:#94a3b8;font-style:italic}
 table{width:100%;border-collapse:collapse;margin-top:8px}
 th,td{border:1px solid #cbd5e1;padding:7px;text-align:left;font:9pt Arial,sans-serif}th{background:#e2e8f0;font-weight:700}
 .bloco{margin-top:24px;page-break-inside:auto}
