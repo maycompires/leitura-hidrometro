@@ -1,8 +1,7 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { AlertTriangle, CheckCircle2, Lightbulb, Droplets, FileText, Info } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { fmtM3Total } from "@/lib/utils";
+import { AlertTriangle, AlertCircle, CheckCircle2, Lightbulb, Droplets, FileText, Info } from "lucide-react";
+import { cn, fmtM3Total } from "@/lib/utils";
 import type { BlockConsumptionSummary, ConsumptionAnomaly } from "@/lib/anomaly-analysis";
 
 type Severity = "alta" | "media" | "baixa" | "ok";
@@ -198,7 +197,7 @@ export function AnalysisReport({
     <div className="space-y-4">
       <div className="grid grid-cols-3 gap-2">
         <StatChip label="Críticas" value={critCount} tone="rose" Icon={AlertTriangle} />
-         <StatChip label="Atenção" value={warnCount} tone="amber" Icon={AlertTriangle} />
+        <StatChip label="Atenção" value={warnCount} tone="amber" Icon={AlertCircle} />
         <StatChip label="Normais" value={okCount} tone="emerald" Icon={CheckCircle2} />
       </div>
 
