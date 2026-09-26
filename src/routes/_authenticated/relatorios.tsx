@@ -12,10 +12,8 @@ import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend,
   LineChart, Line, ReferenceLine,
 } from "recharts";
-import { Download, Sparkles, Loader2 } from "lucide-react";
-import { AnalysisReport } from "@/components/AnalysisReport";
+import { Download } from "lucide-react";
 import { BLOCOS, fetchReadings, type Bloco, type Reading } from "@/lib/api";
-import { analyzeConsumption } from "@/lib/anomalies.functions";
 import { toast } from "sonner";
 import { fmtLeitura, fmtConsumo, fmtM3Total, divisorBloco } from "@/lib/utils";
 import { mediaIgnorandoZeroInicial, mediaIncluindoZeros } from "@/lib/media";
@@ -54,11 +52,8 @@ function groupKey(d: Date, p: Period) {
 
 export function ReportsPage() {
   const [period, setPeriod] = useState<Period>("month");
-  const [analysis, setAnalysis] = useState<Awaited<ReturnType<typeof analyzeConsumption>> | null>(null);
-  const [analyzing, setAnalyzing] = useState(false);
   const [incluirZeros, setIncluirZeros] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<string>(() => monthKey(new Date()));
-  const runAnalysis = useServerFn(analyzeConsumption);
   const { data: readings = [] } = useQuery({ queryKey: ["readings"], queryFn: () => fetchReadings() });
 
   // Meses disponíveis: do primeiro mês com leitura até o mês atual.
@@ -265,10 +260,6 @@ export function ReportsPage() {
         (c) => `<div class="chart-cell"><h3>${c.title}</h3><div class="chart">${c.svg}</div></div>`,
       )
       .join("")}</div>`;
-    const aiReportElement = document.querySelector("[data-ai-report]");
-    const aiReportHtml = aiReportElement
-      ? `<section class="ai-report page-break"><h2>RELATÓRIO TÉCNICO DE ANÁLISE</h2>${aiReportElement.innerHTML}</section>`
-      : `<section class="notice"><strong>Análise técnica:</strong> gere a análise de IA antes de exportar para incluí-la neste documento.</section>`;
 
     const blocosHtml = BLOCOS.map((b) => {
       return `
@@ -308,7 +299,6 @@ th,td{border:1px solid #cbd5e1;padding:7px;text-align:left;font:9pt Arial,sans-s
   <table><thead><tr>${BLOCOS.map((b) => `<th>Bloco ${b}</th>`).join("")}<th>Total Geral</th></tr></thead>
   <tbody><tr>${BLOCOS.map((b) => `<td>${fmtConsumo(totals.byBloco[b], b)}</td>`).join("")}<td><strong>${fmtM3Total(totals.total)}</strong></td></tr></tbody></table>
 </div>
-${aiReportHtml}
 <section class="page-break"><h2>Gráficos de consumo</h2>${chartsGridHtml}</section>
 ${blocosHtml}
 <div class="print-footer">Condomínio Residencial Terra do Sol · Relatório de consumo de água</div>
@@ -321,29 +311,6 @@ ${blocosHtml}
     setTimeout(() => w.print(), 500);
   };
 
-  const handleAnalyze = async () => {
-    if (filtered.length === 0) {
-      toast.error("Sem dados no período para analisar");
-      return;
-    }
-    setAnalyzing(true);
-    setAnalysis(null);
-    try {
-      const payload = filtered.map((r) => ({
-        bloco: r.bloco,
-        data_hora: r.data_hora,
-        consumo_m3: Number(r.consumo_m3),
-        leitura_atual: Number(r.leitura_atual),
-      }));
-      const res = await runAnalysis({ data: { readings: payload, period } });
-      setAnalysis(res);
-      toast.success("Análise concluída");
-    } catch (e: any) {
-      toast.error(e?.message ?? "Falha na análise");
-    } finally {
-      setAnalyzing(false);
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -439,37 +406,6 @@ ${blocosHtml}
         </Card>
       </div>
 
-      <Card className="p-4 shadow-soft border-sky-200/60 bg-gradient-to-br from-sky-50/60 to-transparent dark:from-sky-950/20">
-        <div className="flex items-center justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-sky-600" />
-            <h2 className="text-sm font-medium">Análise de IA — anomalias de consumo</h2>
-          </div>
-          <Button size="sm" onClick={handleAnalyze} disabled={analyzing}>
-            {analyzing ? (
-              <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Analisando...</>
-            ) : (
-              <><Sparkles className="mr-2 h-4 w-4" />Analisar período</>
-            )}
-          </Button>
-        </div>
-        {!analysis && !analyzing && (
-          <p className="text-xs text-muted-foreground mt-3">
-            Detecta picos, quedas anormais e padrões fora da média por bloco usando IA.
-          </p>
-        )}
-        {analysis && (
-          <div className="mt-4">
-            <AnalysisReport
-              markdown={analysis.analysis}
-              anomalies={analysis.anomalies}
-              summaries={analysis.summaries}
-              period={period}
-              generatedAt={analysis.generatedAt}
-            />
-          </div>
-        )}
-      </Card>
 
 
       <Card className="p-4 shadow-soft">
