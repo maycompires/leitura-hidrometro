@@ -11,15 +11,6 @@ vi.mock("@/lib/api", async () => {
   };
 });
 
-// useServerFn devolve a função passada — não precisamos disparar IA no teste.
-vi.mock("@tanstack/react-start", () => ({
-  useServerFn: (fn: unknown) => fn,
-}));
-
-// O server fn em si não importa pro teste — basta existir.
-vi.mock("@/lib/anomalies.functions", () => ({
-  analyzeConsumption: vi.fn(),
-}));
 
 // Recharts requer layout real; substituímos por stubs renderizáveis em jsdom.
 vi.mock("recharts", () => {
