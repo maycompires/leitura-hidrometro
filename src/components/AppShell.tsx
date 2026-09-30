@@ -10,6 +10,7 @@ const nav = [
   { to: "/dashboard", label: "Início", icon: LayoutDashboard },
   { to: "/historico", label: "Histórico", icon: History },
   { to: "/relatorios", label: "Relatórios", icon: BarChart3 },
+  { to: "/chat", label: "Assistente", icon: MessageCircle },
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {
