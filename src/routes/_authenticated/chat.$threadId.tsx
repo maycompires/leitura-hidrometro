@@ -98,8 +98,8 @@ function ChatPage() {
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-[240px_1fr]">
-      <aside className="space-y-2">
+    <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-[240px_minmax(0,1fr)]">
+      <aside className="min-w-0 space-y-2">
         <Button onClick={novaConversa} className="w-full" size="sm">
           <Plus className="h-4 w-4" /> Nova conversa
         </Button>
@@ -175,7 +175,7 @@ function ChatWindow({ threadId, initial, onSaved }: { threadId: string; initial:
   };
 
   return (
-    <div className="flex h-[calc(100dvh-13rem)] flex-col rounded-2xl border border-border bg-card md:h-[calc(100dvh-10rem)]">
+    <div className="flex h-[calc(100dvh-13rem)] min-w-0 flex-col overflow-hidden rounded-2xl border border-border bg-card md:h-[calc(100dvh-10rem)]">
       <Conversation className="flex-1">
         <ConversationContent>
           {messages.length === 0 ? (
@@ -185,7 +185,7 @@ function ChatWindow({ threadId, initial, onSaved }: { threadId: string; initial:
               <p className="text-sm text-muted-foreground">Pergunte sobre as leituras dos blocos ou peça dicas de economia.</p>
               <div className="mt-3 flex flex-wrap justify-center gap-2">
                 {SUGESTOES.map((s) => (
-                  <Button key={s} variant="outline" size="sm" onClick={() => send(s)}>
+                  <Button key={s} variant="outline" size="sm" className="h-auto max-w-full whitespace-normal py-1.5 text-left" onClick={() => send(s)}>
                     {s}
                   </Button>
                 ))}
