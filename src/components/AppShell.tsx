@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { Droplet, LayoutDashboard, History, BarChart3, Moon, Sun, LogOut } from "lucide-react";
+import { Droplet, LayoutDashboard, History, BarChart3, Moon, Sun, LogOut, MessageCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { Button } from "@/components/ui/button";
