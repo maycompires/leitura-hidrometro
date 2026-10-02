@@ -149,6 +149,7 @@ function ChatPage() {
         <ChatWindow
           key={threadId}
           threadId={threadId}
+          title={threadAtual?.title ?? "Conversa"}
           initial={history.data ?? []}
           onSaved={() => {
             qc.invalidateQueries({ queryKey: ["chat_threads"] });
