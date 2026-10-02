@@ -112,7 +112,7 @@ function ChatPage() {
 
   const threadAtual = threads.data?.find((t) => t.id === threadId);
 
-  return (
+  const content = (
     <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-[240px_minmax(0,1fr)]">
       <aside className="min-w-0 space-y-2">
         <Button onClick={novaConversa} className="w-full" size="sm">
