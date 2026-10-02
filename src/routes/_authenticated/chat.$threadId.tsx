@@ -60,6 +60,7 @@ function ChatPage() {
   const { threadId } = Route.useParams();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   const threads = useQuery({
     queryKey: ["chat_threads"],
