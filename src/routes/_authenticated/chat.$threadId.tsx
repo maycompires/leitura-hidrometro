@@ -102,11 +102,15 @@ function ChatPage() {
   }
 
   async function apagar(id: string) {
+    setConfirmDelete(null);
     const { error } = await supabase.from("chat_threads").delete().eq("id", id);
-    if (error) return toast.error("Não foi possível apagar.");
+    if (error) return toast.error("Não foi possível apagar a conversa.");
+    toast.success("Conversa apagada.");
     await qc.invalidateQueries({ queryKey: ["chat_threads"] });
     if (id === threadId) navigate({ to: "/chat" });
   }
+
+  const threadAtual = threads.data?.find((t) => t.id === threadId);
 
   return (
     <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-[240px_minmax(0,1fr)]">
@@ -127,7 +131,11 @@ function ChatPage() {
                 <MessageSquare className="h-3.5 w-3.5 shrink-0" />
                 <span className="max-w-[160px] truncate">{t.title}</span>
               </Link>
-              <button onClick={() => apagar(t.id)} aria-label="Apagar conversa" className="rounded p-1 hover:text-destructive">
+              <button
+                onClick={() => setConfirmDelete(t.id)}
+                aria-label="Apagar conversa"
+                className="rounded p-1 hover:text-destructive"
+              >
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
             </div>
