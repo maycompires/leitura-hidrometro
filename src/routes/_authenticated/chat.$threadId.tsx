@@ -180,7 +180,19 @@ function ChatPage() {
   );
 }
 
-function ChatWindow({ threadId, initial, onSaved }: { threadId: string; initial: UIMessage[]; onSaved: () => void }) {
+function ChatWindow({
+  threadId,
+  initial,
+  onSaved,
+  title,
+  onApagar,
+}: {
+  threadId: string;
+  initial: UIMessage[];
+  onSaved: () => void;
+  title: string;
+  onApagar: () => void;
+}) {
   const [input, setInput] = useState("");
   const transport = useMemo(
     () =>
