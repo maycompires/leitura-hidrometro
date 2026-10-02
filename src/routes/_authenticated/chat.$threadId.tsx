@@ -7,6 +7,16 @@ import { Plus, Trash2, Database, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import {
   Conversation,
@@ -50,6 +60,7 @@ function ChatPage() {
   const { threadId } = Route.useParams();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   const threads = useQuery({
     queryKey: ["chat_threads"],
@@ -91,13 +102,17 @@ function ChatPage() {
   }
 
   async function apagar(id: string) {
+    setConfirmDelete(null);
     const { error } = await supabase.from("chat_threads").delete().eq("id", id);
-    if (error) return toast.error("Não foi possível apagar.");
+    if (error) return toast.error("Não foi possível apagar a conversa.");
+    toast.success("Conversa apagada.");
     await qc.invalidateQueries({ queryKey: ["chat_threads"] });
     if (id === threadId) navigate({ to: "/chat" });
   }
 
-  return (
+  const threadAtual = threads.data?.find((t) => t.id === threadId);
+
+  const content = (
     <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-[240px_minmax(0,1fr)]">
       <aside className="min-w-0 space-y-2">
         <Button onClick={novaConversa} className="w-full" size="sm">
@@ -116,7 +131,11 @@ function ChatPage() {
                 <MessageSquare className="h-3.5 w-3.5 shrink-0" />
                 <span className="max-w-[160px] truncate">{t.title}</span>
               </Link>
-              <button onClick={() => apagar(t.id)} aria-label="Apagar conversa" className="rounded p-1 hover:text-destructive">
+              <button
+                onClick={() => setConfirmDelete(t.id)}
+                aria-label="Apagar conversa"
+                className="rounded p-1 hover:text-destructive"
+              >
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
             </div>
@@ -130,17 +149,51 @@ function ChatPage() {
         <ChatWindow
           key={threadId}
           threadId={threadId}
+          title={threadAtual?.title ?? "Conversa"}
           initial={history.data ?? []}
           onSaved={() => {
             qc.invalidateQueries({ queryKey: ["chat_threads"] });
           }}
+          onApagar={() => setConfirmDelete(threadId)}
         />
       )}
     </div>
   );
+
+  return (
+    <>
+      {content}
+      <AlertDialog open={confirmDelete !== null} onOpenChange={(open) => !open && setConfirmDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Apagar conversa?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Essa ação exclui a conversa e todas as mensagens dela. Não é possível desfazer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={() => confirmDelete && apagar(confirmDelete)}>Apagar</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
 }
 
-function ChatWindow({ threadId, initial, onSaved }: { threadId: string; initial: UIMessage[]; onSaved: () => void }) {
+function ChatWindow({
+  threadId,
+  initial,
+  onSaved,
+  title,
+  onApagar,
+}: {
+  threadId: string;
+  initial: UIMessage[];
+  onSaved: () => void;
+  title: string;
+  onApagar: () => void;
+}) {
   const [input, setInput] = useState("");
   const transport = useMemo(
     () =>
@@ -176,6 +229,16 @@ function ChatWindow({ threadId, initial, onSaved }: { threadId: string; initial:
 
   return (
     <div className="flex h-[calc(100dvh-13rem)] min-w-0 flex-col overflow-hidden rounded-2xl border border-border bg-card md:h-[calc(100dvh-10rem)]">
+      <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-2">
+        <h2 className="min-w-0 truncate text-sm font-medium text-foreground">{title}</h2>
+        <button
+          onClick={onApagar}
+          aria-label="Apagar conversa"
+          className="shrink-0 rounded p-1.5 text-muted-foreground hover:text-destructive"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
+      </div>
       <Conversation className="flex-1">
         <ConversationContent>
           {messages.length === 0 ? (
