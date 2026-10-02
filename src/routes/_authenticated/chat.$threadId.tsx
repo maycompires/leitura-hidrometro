@@ -161,7 +161,7 @@ function ChatPage() {
 
   return (
     <>
-      {renderContent()}
+      {content}
       <AlertDialog open={confirmDelete !== null} onOpenChange={(open) => !open && setConfirmDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
