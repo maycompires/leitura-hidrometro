@@ -153,9 +153,30 @@ function ChatPage() {
           onSaved={() => {
             qc.invalidateQueries({ queryKey: ["chat_threads"] });
           }}
+          onApagar={() => setConfirmDelete(threadId)}
         />
       )}
     </div>
+  );
+
+  return (
+    <>
+      {renderContent()}
+      <AlertDialog open={confirmDelete !== null} onOpenChange={(open) => !open && setConfirmDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Apagar conversa?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Essa ação exclui a conversa e todas as mensagens dela. Não é possível desfazer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={() => confirmDelete && apagar(confirmDelete)}>Apagar</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
 
