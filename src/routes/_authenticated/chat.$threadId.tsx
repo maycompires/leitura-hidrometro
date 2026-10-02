@@ -228,6 +228,16 @@ function ChatWindow({
 
   return (
     <div className="flex h-[calc(100dvh-13rem)] min-w-0 flex-col overflow-hidden rounded-2xl border border-border bg-card md:h-[calc(100dvh-10rem)]">
+      <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-2">
+        <h2 className="min-w-0 truncate text-sm font-medium text-foreground">{title}</h2>
+        <button
+          onClick={onApagar}
+          aria-label="Apagar conversa"
+          className="shrink-0 rounded p-1.5 text-muted-foreground hover:text-destructive"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
+      </div>
       <Conversation className="flex-1">
         <ConversationContent>
           {messages.length === 0 ? (
